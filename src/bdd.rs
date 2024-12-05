@@ -5,6 +5,7 @@ use pyo3::exceptions::PyValueError;
 use std::io::BufWriter;
 use dd::dot::Dot;
 use dd::common::Level;
+use dd::count::*;
 
 use std::rc::Weak;
 use std::rc::Rc;
@@ -210,6 +211,10 @@ impl BddNode {
     pub fn extract(&self) -> Vec<Vec<String>> {
         let bdd = self.bdd.upgrade().unwrap();
         ft::extract(&mut bdd.clone().borrow_mut(), &self.node)
+    }
+
+    pub fn count(&self) -> (usize, u64) {
+        self.node.count()
     }
 }
 

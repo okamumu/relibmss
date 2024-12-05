@@ -40,6 +40,7 @@ pub enum FTNode {
 
 pub struct Var {
     pub node: Vec<String>,
+    pub bddnode: pybdd::BddNode,
 }
 
 struct FTMgr {
@@ -101,78 +102,82 @@ impl FTMgr {
         let node = top.node();
         match node.as_ref() {
             FTNode::Basic { id, name } => {
-                match ftmgr.events.borrow_mut().get_mut(name) {
-                    Some(v) => {
-                        let u = v.node.len();
-                        let name_ = format!("{}_{}", name, u);
-                        let x = bddmgr.var(&name_);
-                        v.node.push(name_);
-                        x.clone()
-                    },
-                    None => {
-                        let name_ = format!("{}_0", name);
-                        let x = bddmgr.var(&name_);
-                        let v = Var { node: vec![name_] };
-                        ftmgr.events.borrow_mut().insert(name.clone(), v);
-                        x.clone()
-                    },
+                if let Some(v) = ftmgr.events.borrow_mut().get_mut(name) {
+                    let u = v.node.len();
+                    let name_ = format!("{}_{}", name, u);
+                    let x = bddmgr.var(&name_);
+                    v.node.push(name_);
+                    v.bddnode = x.clone();
+                    return x
                 }
+                let name_ = format!("{}_0", name);
+                let x = bddmgr.var(&name_);
+                let v = Var { node: vec![name_], bddnode: x.clone() };
+                {
+                    let mut events = ftmgr.events.borrow_mut();
+                    events.insert(name.clone(), v);
+                }
+                x
             }
             FTNode::Repeat { id, name } => {
-                match ftmgr.events.borrow_mut().get(name) {
-                    Some(v) => bddmgr.var(name),
-                    None => {
-                        let x = bddmgr.var(&name);
-                        let v = Var { node: vec![name.clone()] };
-                        ftmgr.events.borrow_mut().insert(name.clone(), v);
-                        x.clone()
-                    },
+                if let Some(v) = ftmgr.events.borrow().get(name) {
+                    return v.bddnode.clone();
                 }
+                let x = bddmgr.var(&name);
+                let v = Var { node: vec![name.clone()], bddnode: x.clone() };
+                {
+                    let mut events = ftmgr.events.borrow_mut();
+                    events.insert(name.clone(), v);
+                }
+                x
             }
             FTNode::And { id, args } => {
-                match ftmgr.bddnode.borrow_mut().get(id) {
-                    Some(x) => x.clone(),
-                    None => {
-                        let mut b = Vec::new();
-                        for arg in args.iter() {
-                            let tmp = Self::create(mgr, bddmgr, arg.clone());
-                            b.push(tmp);
-                        }
-                        let x = bddmgr.and(b);
-                        ftmgr.bddnode.borrow_mut().insert(*id, x.clone());
-                        x.clone()
-                    },
+                if let Some(x) = ftmgr.bddnode.borrow().get(id) {
+                    return x.clone();
                 }
+                let mut b = Vec::new();
+                for arg in args.iter() {
+                    let tmp = Self::create(mgr, bddmgr, arg.clone());
+                    b.push(tmp);
+                }
+                let x = bddmgr.and(b);
+                {
+                    let mut bddnodes = ftmgr.bddnode.borrow_mut();
+                    bddnodes.insert(*id, x.clone());
+                }
+                x
             }
             FTNode::Or { id, args } => {
-                match ftmgr.bddnode.borrow_mut().get(id) {
-                    Some(x) => x.clone(),
-                    None => {
-                        let mut b = Vec::new();
-                        for arg in args.iter() {
-                            let tmp = Self::create(mgr, bddmgr, arg.clone());
-                            b.push(tmp);
-                        }
-                        let x = bddmgr.or(b);
-                        ftmgr.bddnode.borrow_mut().insert(*id, x.clone());
-                        x.clone()
-                    },
+                if let Some(x) = ftmgr.bddnode.borrow().get(id) {
+                    return x.clone();
                 }
+                let mut b = Vec::new();
+                for arg in args.iter() {
+                    let tmp = Self::create(mgr, bddmgr, arg.clone());
+                    b.push(tmp);
+                }
+                let x = bddmgr.or(b);
+                {
+                    let mut bddnodes = ftmgr.bddnode.borrow_mut();
+                    bddnodes.insert(*id, x.clone());
+                }
+                x
             }
             FTNode::KofN { id, k, args } => {
-                match ftmgr.bddnode.borrow_mut().get(id) {
-                    Some(x) => x.clone(),
-                    None => {
-                        let mut b = Vec::new();
-                        for arg in args.iter() {
-                            let tmp = Self::create(mgr, bddmgr, arg.clone());
-                            b.push(tmp);
-                        }
-                        let x = bddmgr.kofn(*k, b);
-                        ftmgr.bddnode.borrow_mut().insert(*id, x.clone());
-                        x.clone()
-                    },
+                if let Some(x) = ftmgr.bddnode.borrow().get(id) {
+                    return x.clone();
                 }
+                let mut b = Vec::new();
+                for arg in args.iter() {
+                    let tmp = Self::create(mgr, bddmgr, arg.clone());
+                    b.push(tmp);
+                }
+                let x = bddmgr.kofn(*k, b);
+                {
+                    let mut bddnodes = ftmgr.bddnode.borrow_mut();
+                    bddnodes.insert(*id, x.clone());    
+                }
+                x
             }
         }
     }
