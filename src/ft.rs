@@ -1,14 +1,10 @@
 // mod ft
 
 use std::collections::HashMap;
-use std::hash::Hash;
-use std::rc::Rc;
 
 use dd::bdd::*;
 use dd::common::NodeId;
-use dd::common::Level;
 use dd::nodes::NonTerminal;
-use pyo3::pyclass;
 
 pub fn kofn(bdd: &mut Bdd, k: usize, nodes: Vec<BddNode>) -> BddNode {
     match k {

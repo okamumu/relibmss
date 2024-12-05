@@ -1,6 +1,5 @@
 //
 
-use dd::bdd;
 
 use std::borrow::BorrowMut;
 use std::collections::HashMap;
@@ -9,9 +8,7 @@ use std::rc::Rc;
 use std::cell::RefCell;
 
 use pyo3::prelude::*;
-use pyo3::exceptions::PyValueError;
 
-use crate::ft;
 use crate::bdd as pybdd;
 
 pub enum FTNode {

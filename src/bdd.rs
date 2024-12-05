@@ -4,7 +4,6 @@ use dd::bdd;
 use pyo3::exceptions::PyValueError;
 use std::io::BufWriter;
 use dd::dot::Dot;
-use dd::common::Level;
 use dd::count::*;
 
 use std::rc::Weak;
