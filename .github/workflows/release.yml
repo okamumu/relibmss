@@ -28,4 +28,4 @@ jobs:
       env:
         PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
         PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-      run: maturin publish --release
+      run: maturin publish
