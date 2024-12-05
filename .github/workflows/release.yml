@@ -21,19 +21,10 @@ jobs:
     - name: Install maturin
       run: pip install maturin==1.7.8
 
-    - name: Debug Environment Variables
-      env:
-        PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
-        PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-      run: |
-        echo "PYPI_USERNAME: $PYPI_USERNAME"
-        echo "PYPI_PASSWORD is set: [${{ secrets.PYPI_PASSWORD != '' }}]"
-
     - name: Build Python package
       run: maturin build --release
 
-    - name: Upload to PyPI
+    - name: Build and publish
       env:
-        PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
-        PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-      run: maturin publish
+        MATURIN_PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+      run: maturin publish --non-interactive
