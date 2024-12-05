@@ -1,0 +1,13 @@
+[package]
+name = "pyft"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "pyft"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.18.3", features = ["extension-module"] }
+dd = { git = "https://github.com/okamumu/rust-dd.git" }
+

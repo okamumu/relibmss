@@ -1,0 +1,22 @@
+{
+    "name": "Python-Rust Dev Container",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": ".."
+    },
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "python.pythonPath": "/home/vscode/.venv/bin/python",
+                "terminal.integrated.shell.linux": "/bin/bash"
+            },
+            "extensions": [
+                "ms-python.python",
+                "rust-lang.rust",
+                "bungcip.better-toml"
+            ]        
+        }
+    },
+    "postCreateCommand": "./setup.sh",
+    "remoteUser": "vscode"
+}
