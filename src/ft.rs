@@ -35,12 +35,17 @@ pub fn _or(bdd: &mut Bdd, nodes: Vec<BddNode>) -> BddNode {
 }
 
 // prob
-pub fn prob(bdd: &mut Bdd, node: &BddNode, pv: HashMap<String,f64>) -> f64 {
+pub fn prob(bdd: &mut Bdd, node: &BddNode, pv: HashMap<String, f64>) -> f64 {
     let cache = &mut HashMap::new();
     _prob(bdd, &node, &pv, cache)
 }
 
-fn _prob(bdd: &mut Bdd, node: &BddNode, pv: &HashMap<String,f64>, cache: &mut HashMap<NodeId,f64>) -> f64 {
+fn _prob(
+    bdd: &mut Bdd,
+    node: &BddNode,
+    pv: &HashMap<String, f64>,
+    cache: &mut HashMap<NodeId, f64>,
+) -> f64 {
     let key = node.id();
     match cache.get(&key) {
         Some(x) => x.clone(),
@@ -54,7 +59,7 @@ fn _prob(bdd: &mut Bdd, node: &BddNode, pv: &HashMap<String,f64>, cache: &mut Ha
                     let low = _prob(bdd, &fnode[0], pv, cache);
                     let high = _prob(bdd, &fnode[1], pv, cache);
                     fp * low + (1.0 - fp) * high
-                },
+                }
             };
             cache.insert(key, result);
             result
@@ -67,7 +72,7 @@ pub fn minsol(bdd: &mut Bdd, node: &BddNode) -> BddNode {
     _minsol(bdd, &node, cache)
 }
 
-fn _minsol(dd: &mut Bdd, node: &BddNode, cache: &mut HashMap<NodeId,BddNode>) -> BddNode {
+fn _minsol(dd: &mut Bdd, node: &BddNode, cache: &mut HashMap<NodeId, BddNode>) -> BddNode {
     let key = node.id();
     match cache.get(&key) {
         Some(x) => x.clone(),
@@ -80,7 +85,7 @@ fn _minsol(dd: &mut Bdd, node: &BddNode, cache: &mut HashMap<NodeId,BddNode>) ->
                     let high = dd.setdiff(&tmp, &fnode[0]);
                     let low = _minsol(dd, &fnode[0], cache);
                     dd.create_node(fnode.header(), &low, &high)
-                },
+                }
             };
             cache.insert(key, result.clone());
             result
@@ -104,6 +109,6 @@ fn _extract(node: &BddNode, path: &mut Vec<String>, pathset: &mut Vec<Vec<String
             _extract(&fnode[1], path, pathset);
             path.pop();
             _extract(&fnode[0], path, pathset);
-        },
+        }
     }
 }

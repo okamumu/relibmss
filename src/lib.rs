@@ -1,5 +1,5 @@
-pub mod ft;
 pub mod bdd;
+pub mod ft;
 
 pub mod ftnode;
 

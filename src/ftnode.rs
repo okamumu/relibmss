@@ -1,11 +1,10 @@
 //
 
-
 use std::borrow::BorrowMut;
-use std::collections::HashMap;
-use std::rc::Weak;
-use std::rc::Rc;
 use std::cell::RefCell;
+use std::collections::HashMap;
+use std::rc::Rc;
+use std::rc::Weak;
 
 use pyo3::prelude::*;
 
@@ -44,7 +43,7 @@ pub struct FtNode {
 
 struct _Mgr {
     id: RefCell<usize>,
-    bddtable: RefCell<HashMap<usize,pybdd::BddNode>>,
+    bddtable: RefCell<HashMap<usize, pybdd::BddNode>>,
     bddmgr: Rc<RefCell<pybdd::BddMgr>>,
 }
 
@@ -69,47 +68,67 @@ impl _Mgr {
 
     fn basic(mgr: &Rc<RefCell<Self>>, name: &str) -> FtNode {
         let mgr_borrow = mgr.borrow();
-        let node = _Node::Basic { id: mgr_borrow.id(), name: name.to_string() };
+        let node = _Node::Basic {
+            id: mgr_borrow.id(),
+            name: name.to_string(),
+        };
         *mgr_borrow.id.borrow_mut() += 1;
         FtNode::new(mgr.clone(), Rc::new(node))
     }
 
     fn repeat(mgr: &Rc<RefCell<Self>>, name: &str) -> FtNode {
         let mgr_borrow = mgr.borrow();
-        let node = _Node::Repeat { id: mgr_borrow.id(), name: name.to_string() };
+        let node = _Node::Repeat {
+            id: mgr_borrow.id(),
+            name: name.to_string(),
+        };
         *mgr_borrow.id.borrow_mut() += 1;
         FtNode::new(mgr.clone(), Rc::new(node))
     }
 
     fn and(mgr: &Rc<RefCell<Self>>, args: Vec<FtNode>) -> FtNode {
         let mgr_borrow = mgr.borrow();
-        let node = _Node::And { id: mgr_borrow.id(), args };
+        let node = _Node::And {
+            id: mgr_borrow.id(),
+            args,
+        };
         *mgr_borrow.id.borrow_mut() += 1;
         FtNode::new(mgr.clone(), Rc::new(node))
     }
 
     fn or(mgr: &Rc<RefCell<Self>>, args: Vec<FtNode>) -> FtNode {
         let mgr_borrow = mgr.borrow();
-        let node = _Node::Or { id: mgr_borrow.id(), args };
+        let node = _Node::Or {
+            id: mgr_borrow.id(),
+            args,
+        };
         *mgr_borrow.id.borrow_mut() += 1;
         FtNode::new(mgr.clone(), Rc::new(node))
     }
 
     fn kofn(mgr: &Rc<RefCell<Self>>, k: usize, args: Vec<FtNode>) -> FtNode {
         let mgr_borrow = mgr.borrow();
-        let node = _Node::KofN { id: mgr_borrow.id(), k, args };
+        let node = _Node::KofN {
+            id: mgr_borrow.id(),
+            k,
+            args,
+        };
         *mgr_borrow.id.borrow_mut() += 1;
         FtNode::new(mgr.clone(), Rc::new(node))
     }
 
-    fn tobdd(mgr: &Rc<RefCell<Self>>, bddmgr: &Rc<RefCell<pybdd::BddMgr>>, top: FtNode) -> pybdd::BddNode {
+    fn tobdd(
+        mgr: &Rc<RefCell<Self>>,
+        bddmgr: &Rc<RefCell<pybdd::BddMgr>>,
+        top: FtNode,
+    ) -> pybdd::BddNode {
         let ftmgr = mgr.borrow();
         let node = top.node();
         match node.as_ref() {
             _Node::Basic { id, name } => bddmgr.borrow().var(&name),
             _Node::Repeat { id, name } => {
                 if let Some(x) = ftmgr.bddtable.borrow().get(id) {
-                    return x.clone()
+                    return x.clone();
                 }
                 let x = bddmgr.borrow().var(&name);
                 {
@@ -122,7 +141,10 @@ impl _Mgr {
                 if let Some(x) = ftmgr.bddtable.borrow().get(id) {
                     return x.clone();
                 }
-                let b = args.iter().map(|x| Self::tobdd(mgr, bddmgr, x.clone())).collect::<Vec<_>>();
+                let b = args
+                    .iter()
+                    .map(|x| Self::tobdd(mgr, bddmgr, x.clone()))
+                    .collect::<Vec<_>>();
                 let x = bddmgr.borrow().and(b);
                 {
                     let mut bddnodes = ftmgr.bddtable.borrow_mut();
@@ -134,7 +156,10 @@ impl _Mgr {
                 if let Some(x) = ftmgr.bddtable.borrow().get(id) {
                     return x.clone();
                 }
-                let b = args.iter().map(|x| Self::tobdd(mgr, bddmgr, x.clone())).collect::<Vec<_>>();
+                let b = args
+                    .iter()
+                    .map(|x| Self::tobdd(mgr, bddmgr, x.clone()))
+                    .collect::<Vec<_>>();
                 let x = bddmgr.borrow().or(b);
                 {
                     let mut bddnodes = ftmgr.bddtable.borrow_mut();
@@ -146,7 +171,10 @@ impl _Mgr {
                 if let Some(x) = ftmgr.bddtable.borrow().get(id) {
                     return x.clone();
                 }
-                let b = args.iter().map(|x| Self::tobdd(mgr, bddmgr, x.clone())).collect::<Vec<_>>();
+                let b = args
+                    .iter()
+                    .map(|x| Self::tobdd(mgr, bddmgr, x.clone()))
+                    .collect::<Vec<_>>();
                 let x = bddmgr.borrow().kofn(*k, b);
                 {
                     let mut bddnodes = ftmgr.bddtable.borrow_mut();
@@ -156,7 +184,6 @@ impl _Mgr {
             }
         }
     }
-    
 }
 
 #[pymethods]
@@ -212,9 +239,24 @@ impl FtNode {
         match self.node.as_ref() {
             _Node::Basic { name, .. } => name.clone(),
             _Node::Repeat { name, .. } => name.clone(),
-            _Node::And { args, .. } => args.iter().map(|x| x.__repr__()).collect::<Vec<String>>().join(" & "),
-            _Node::Or { args, .. } => args.iter().map(|x| x.__repr__()).collect::<Vec<String>>().join(" | "),
-            _Node::KofN { k, args, .. } => format!("{} of {}", k, args.iter().map(|x| x.__repr__()).collect::<Vec<String>>().join(" | ")),
+            _Node::And { args, .. } => args
+                .iter()
+                .map(|x| x.__repr__())
+                .collect::<Vec<String>>()
+                .join(" & "),
+            _Node::Or { args, .. } => args
+                .iter()
+                .map(|x| x.__repr__())
+                .collect::<Vec<String>>()
+                .join(" | "),
+            _Node::KofN { k, args, .. } => format!(
+                "{} of {}",
+                k,
+                args.iter()
+                    .map(|x| x.__repr__())
+                    .collect::<Vec<String>>()
+                    .join(" | ")
+            ),
         }
     }
 

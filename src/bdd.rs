@@ -1,15 +1,15 @@
 //
 
 use dd::bdd;
+use dd::count::*;
+use dd::dot::Dot;
 use pyo3::exceptions::PyValueError;
 use std::io::BufWriter;
-use dd::dot::Dot;
-use dd::count::*;
 
-use std::rc::Weak;
-use std::rc::Rc;
 use std::cell::RefCell;
 use std::collections::HashMap;
+use std::rc::Rc;
+use std::rc::Weak;
 
 use pyo3::prelude::*;
 
@@ -40,7 +40,6 @@ impl BddMgr {
     // zero
     pub fn zero(&self) -> BddNode {
         BddNode::new(self.bdd.clone(), self.bdd.borrow().zero())
-
     }
 
     // one
@@ -121,7 +120,7 @@ impl BddMgr {
         if stack.len() != 1 {
             return Err(PyValueError::new_err("Invalid expression"));
         }
-        Ok(BddNode::new(self.bdd.clone(), stack.pop().unwrap()))        
+        Ok(BddNode::new(self.bdd.clone(), stack.pop().unwrap()))
     }
 
     pub fn and(&self, nodes: Vec<BddNode>) -> BddNode {
@@ -179,17 +178,26 @@ impl BddNode {
 
     fn __and__(&self, other: &BddNode) -> BddNode {
         let bdd = self.bdd.upgrade().unwrap();
-        BddNode::new(bdd.clone(), bdd.clone().borrow_mut().and(&self.node, &other.node))
+        BddNode::new(
+            bdd.clone(),
+            bdd.clone().borrow_mut().and(&self.node, &other.node),
+        )
     }
 
     fn __or__(&self, other: &BddNode) -> BddNode {
         let bdd = self.bdd.upgrade().unwrap();
-        BddNode::new(bdd.clone(), bdd.clone().borrow_mut().or(&self.node, &other.node))
+        BddNode::new(
+            bdd.clone(),
+            bdd.clone().borrow_mut().or(&self.node, &other.node),
+        )
     }
 
     fn __xor__(&self, other: &BddNode) -> BddNode {
         let bdd = self.bdd.upgrade().unwrap();
-        BddNode::new(bdd.clone(), bdd.clone().borrow_mut().xor(&self.node, &other.node))
+        BddNode::new(
+            bdd.clone(),
+            bdd.clone().borrow_mut().xor(&self.node, &other.node),
+        )
     }
 
     fn __invert__(&self) -> BddNode {
@@ -204,7 +212,10 @@ impl BddNode {
 
     pub fn mcs(&self) -> BddNode {
         let bdd = self.bdd.upgrade().unwrap();
-        BddNode::new(bdd.clone(), ft::minsol(&mut bdd.clone().borrow_mut(), &self.node))
+        BddNode::new(
+            bdd.clone(),
+            ft::minsol(&mut bdd.clone().borrow_mut(), &self.node),
+        )
     }
 
     pub fn extract(&self) -> Vec<Vec<String>> {
@@ -220,7 +231,12 @@ impl BddNode {
 #[pyfunction]
 pub fn ifelse(cond: &BddNode, then: &BddNode, else_: &BddNode) -> BddNode {
     let bdd = cond.bdd.upgrade().unwrap();
-    BddNode::new(bdd.clone(), bdd.clone().borrow_mut().ite(&cond.node, &then.node, &else_.node))
+    BddNode::new(
+        bdd.clone(),
+        bdd.clone()
+            .borrow_mut()
+            .ite(&cond.node, &then.node, &else_.node),
+    )
 }
 
 #[pyfunction]
@@ -230,6 +246,8 @@ pub fn kofn(k: usize, nodes: Vec<BddNode>) -> PyResult<BddNode> {
     }
     let bdd = nodes[0].bdd.upgrade().unwrap();
     let nodes = nodes.iter().map(|n| n.node()).collect::<Vec<_>>();
-    Ok(BddNode::new(bdd.clone(), ft::kofn(&mut bdd.clone().borrow_mut(), k, nodes)))
+    Ok(BddNode::new(
+        bdd.clone(),
+        ft::kofn(&mut bdd.clone().borrow_mut(), k, nodes),
+    ))
 }
-

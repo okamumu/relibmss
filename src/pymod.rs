@@ -4,12 +4,12 @@ use pyo3::wrap_pyfunction;
 use crate::bdd::BddMgr;
 use crate::bdd::BddNode;
 
-use crate::bdd::kofn;
 use crate::bdd::ifelse;
+use crate::bdd::kofn;
 
+use crate::ftnode::ftkofn;
 use crate::ftnode::FtMgr;
 use crate::ftnode::FtNode;
-use crate::ftnode::ftkofn;
 
 #[pymodule]
 pub fn relibmss(_py: Python, m: &PyModule) -> PyResult<()> {
