@@ -18,7 +18,7 @@ use crate::ft;
 #[pyclass(unsendable)]
 pub struct BddMgr {
     pub bdd: Rc<RefCell<bdd::Bdd>>,
-    pub vars: HashMap<String, bdd::BddNode>,
+    pub vars: RefCell<HashMap<String, bdd::BddNode>>,
 }
 
 #[pymethods]
@@ -28,7 +28,7 @@ impl BddMgr {
     pub fn new() -> Self {
         BddMgr {
             bdd: Rc::new(RefCell::new(bdd::Bdd::new())),
-            vars: HashMap::new(),
+            vars: RefCell::new(HashMap::new()),
         }
     }
 
@@ -49,19 +49,19 @@ impl BddMgr {
     }
 
     // var
-    pub fn var(&mut self, var: &str) -> BddNode {
-        let level = self.vars.len();
+    pub fn var(&self, var: &str) -> BddNode {
+        let level = self.vars.borrow().len();
         let mut bdd = self.bdd.borrow_mut();
         let h = bdd.header(level, var);
         let x0 = bdd.zero();
         let x1 = bdd.one();
         let node = bdd.create_node(&h, &x0, &x1);
-        self.vars.insert(var.to_string(), node.clone());
+        self.vars.borrow_mut().insert(var.to_string(), node.clone());
         BddNode::new(self.bdd.clone(), node)
     }
 
     // vars
-    pub fn vars(&mut self, vars: Vec<&str>) -> Vec<BddNode> {
+    pub fn vars(&self, vars: Vec<&str>) -> Vec<BddNode> {
         let mut bdd = self.bdd.borrow_mut();
         let mut nodes = Vec::new();
         for (level, v) in vars.iter().enumerate() {
@@ -70,14 +70,14 @@ impl BddMgr {
             let x1 = bdd.one();
             let b = vec![bdd.zero(), bdd.one()];
             let node = bdd.create_node(&h, &x0, &x1);
-            self.vars.insert(v.to_string(), node.clone());
+            self.vars.borrow_mut().insert(v.to_string(), node.clone());
             let x = BddNode::new(self.bdd.clone(), node);
             nodes.push(x);
         }
         nodes
     }
 
-    pub fn rpn(&mut self, expr: &str) -> PyResult<BddNode> {
+    pub fn rpn(&self, expr: &str) -> PyResult<BddNode> {
         let mut stack = Vec::new();
         let mut bdd = self.bdd.borrow_mut();
         for token in expr.split_whitespace() {
@@ -110,7 +110,7 @@ impl BddMgr {
                     stack.push(bdd.ite(&cond, &then, &else_));
                 }
                 _ => {
-                    if let Some(node) = self.vars.get(token) {
+                    if let Some(node) = self.vars.borrow().get(token) {
                         stack.push(node.clone());
                     } else {
                         return Err(PyValueError::new_err("unknown token"));

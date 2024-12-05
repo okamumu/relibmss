@@ -91,10 +91,9 @@ def test_test2():
 
     # print(g116)
 
-    bdd = ms.BddMgr()
     # x = top.compile(bdd)
     # print(x.count())
-    x = top.compile(bdd)
+    x = top.bdd()
     print(x.count())
     m = x.mcs()
     print(m.extract())
