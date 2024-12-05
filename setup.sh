@@ -11,8 +11,5 @@ source .venv/bin/activate
 pip install --upgrade pip
 
 # 依存関係のインストール
-pip install -r python/requirements.txt
+pip install -r dev-requirements.txt
 
-# Rust ライブラリのビルドとインストール
-cd dd
-maturin develop

@@ -105,13 +105,13 @@ impl FTMgr {
                     Some(v) => {
                         let u = v.node.len();
                         let name_ = format!("{}_{}", name, u);
-                        let x = bddmgr.var(&name_).unwrap();
+                        let x = bddmgr.var(&name_);
                         v.node.push(name_);
                         x.clone()
                     },
                     None => {
                         let name_ = format!("{}_0", name);
-                        let x = bddmgr.var(&name_).unwrap();
+                        let x = bddmgr.var(&name_);
                         let v = Var { node: vec![name_] };
                         ftmgr.events.borrow_mut().insert(name.clone(), v);
                         x.clone()
@@ -120,9 +120,9 @@ impl FTMgr {
             }
             FTNode::Repeat { id, name } => {
                 match ftmgr.events.borrow_mut().get(name) {
-                    Some(v) => bddmgr.var(name).unwrap(),
+                    Some(v) => bddmgr.var(name),
                     None => {
-                        let x = bddmgr.var(&name).unwrap();
+                        let x = bddmgr.var(&name);
                         let v = Var { node: vec![name.clone()] };
                         ftmgr.events.borrow_mut().insert(name.clone(), v);
                         x.clone()

@@ -67,58 +67,24 @@ fn _prob(bdd: &mut Bdd, node: &BddNode, pv: &HashMap<String,f64>, cache: &mut Ha
 }
 
 pub fn minsol(bdd: &mut Bdd, node: &BddNode) -> BddNode {
-    let cache1 = &mut HashMap::new();
-    let cache2 = &mut HashMap::new();
-    _minsol(bdd, &node, cache1, cache2)
+    let cache = &mut HashMap::new();
+    _minsol(bdd, &node, cache)
 }
 
-fn _minsol(bdd: &mut Bdd, node: &BddNode, cache1: &mut HashMap<NodeId,BddNode>, cache2: &mut HashMap<(NodeId,NodeId),BddNode>) -> BddNode {
+fn _minsol(dd: &mut Bdd, node: &BddNode, cache: &mut HashMap<NodeId,BddNode>) -> BddNode {
     let key = node.id();
-    match cache1.get(&key) {
-        Some(x) => x.clone(),
-        None => {
-            let result = match node {
-                BddNode::Zero => bdd.zero(),
-                BddNode::One => bdd.one(),
-                BddNode::NonTerminal(fnode) => {
-                    let x1 = _minsol(bdd, &fnode[1], cache1, cache2);
-                    let high = without(bdd, &x1, &fnode[0], cache2);
-                    let low = _minsol(bdd, &fnode[0], cache1, cache2);
-                    bdd.node(fnode.header(), &vec![low, high]).ok().unwrap()
-                },
-            };
-            cache1.insert(key, result.clone());
-            result
-        }
-    }
-}
-
-fn without(bdd: &mut Bdd, f: &BddNode, g: &BddNode, cache: &mut HashMap<(NodeId,NodeId),BddNode>) -> BddNode {
-    let key = (f.id(), g.id());
     match cache.get(&key) {
         Some(x) => x.clone(),
         None => {
-            let result = match (f, g) {
-                (BddNode::Zero, _) => bdd.zero(),
-                (_, BddNode::One) => bdd.zero(),
-                (_, BddNode::Zero) => f.clone(),
-                (BddNode::One, _) => bdd.not(&g),
-                (BddNode::NonTerminal(fnode), BddNode::NonTerminal(gnode)) if fnode.level() > gnode.level() => {
-                    let low = without(bdd, &fnode[0], g, cache);
-                    let high = without(bdd, &fnode[1], g, cache);
-                    bdd.node(fnode.header(), &vec![low, high]).ok().unwrap()
+            let result = match node {
+                BddNode::Zero => dd.zero(),
+                BddNode::One => dd.one(),
+                BddNode::NonTerminal(fnode) => {
+                    let tmp = _minsol(dd, &fnode[1], cache);
+                    let high = dd.setdiff(&tmp, &fnode[0]);
+                    let low = _minsol(dd, &fnode[0], cache);
+                    dd.create_node(fnode.header(), &low, &high)
                 },
-                (BddNode::NonTerminal(fnode), BddNode::NonTerminal(gnode)) if fnode.level() < gnode.level() => {
-                    let low = without(bdd, f, &gnode[0], cache);
-                    let high = without(bdd, f, &gnode[1], cache);
-                    bdd.node(fnode.header(), &vec![low, high]).ok().unwrap()
-                },
-                (BddNode::NonTerminal(fnode), BddNode::NonTerminal(gnode)) if fnode.level() == gnode.level() => {
-                    let low = without(bdd, &fnode[0], &gnode[0], cache);
-                    let high = without(bdd, &fnode[1], &gnode[1], cache);
-                    bdd.node(fnode.header(), &vec![low, high]).ok().unwrap()
-                },
-                _ => panic!("Unexpected case"),
             };
             cache.insert(key, result.clone());
             result

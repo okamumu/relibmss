@@ -49,39 +49,32 @@ impl BddMgr {
     }
 
     // var
-    pub fn var(&mut self, var: &str) -> PyResult<BddNode> {
+    pub fn var(&mut self, var: &str) -> BddNode {
         let level = self.vars.len();
         let mut bdd = self.bdd.borrow_mut();
         let h = bdd.header(level, var);
-        let b = vec![bdd.zero(), bdd.one()];
-        match bdd.node(&h, &b) {
-            Result::Ok(node) => {
-                self.vars.insert(var.to_string(), node.clone());
-                Ok(BddNode::new(self.bdd.clone(), node))
-            }
-            Result::Err(_) => Err(PyValueError::new_err("Error"))
-        }
+        let x0 = bdd.zero();
+        let x1 = bdd.one();
+        let node = bdd.create_node(&h, &x0, &x1);
+        self.vars.insert(var.to_string(), node.clone());
+        BddNode::new(self.bdd.clone(), node)
     }
 
     // vars
-    pub fn vars(&mut self, vars: Vec<&str>) -> PyResult<Vec<BddNode>> {
+    pub fn vars(&mut self, vars: Vec<&str>) -> Vec<BddNode> {
         let mut bdd = self.bdd.borrow_mut();
         let mut nodes = Vec::new();
         for (level, v) in vars.iter().enumerate() {
             let h = bdd.header(level, v);
+            let x0 = bdd.zero();
+            let x1 = bdd.one();
             let b = vec![bdd.zero(), bdd.one()];
-            match bdd.node(&h, &b) {
-                Result::Ok(node) => {
-                    self.vars.insert(v.to_string(), node.clone());
-                    let x = BddNode::new(self.bdd.clone(), node);
-                    nodes.push(x);
-                }
-                Result::Err(_) => {
-                    return Err(PyValueError::new_err("Error"));
-                }
-            }
+            let node = bdd.create_node(&h, &x0, &x1);
+            self.vars.insert(v.to_string(), node.clone());
+            let x = BddNode::new(self.bdd.clone(), node);
+            nodes.push(x);
         }
-        Ok(nodes)
+        nodes
     }
 
     pub fn rpn(&mut self, expr: &str) -> PyResult<BddNode> {

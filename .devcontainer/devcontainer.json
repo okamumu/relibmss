@@ -12,8 +12,7 @@
             },
             "extensions": [
                 "ms-python.python",
-                "rust-lang.rust",
-                "bungcip.better-toml"
+                "rust-lang.rust-analyzer"
             ]        
         }
     },

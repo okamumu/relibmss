@@ -1,13 +1,13 @@
 [package]
-name = "pyft"
+name = "relibmss"
 version = "0.1.0"
 edition = "2021"
 
 [lib]
-name = "pyft"
+name = "relibmss"
 crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = { version = "0.18.3", features = ["extension-module"] }
-dd = { git = "https://github.com/okamumu/rust-dd.git" }
+dd = { version = "0.2.0", git = "https://github.com/okamumu/rust-dd.git" }
 

@@ -12,7 +12,7 @@ use crate::ftnode::FtNode;
 use crate::ftnode::ftkofn;
 
 #[pymodule]
-pub fn pyft(_py: Python, m: &PyModule) -> PyResult<()> {
+pub fn relibmss(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<BddNode>()?;
     m.add_class::<BddMgr>()?;
     m.add_function(wrap_pyfunction!(ifelse, m)?)?;

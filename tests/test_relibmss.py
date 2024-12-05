@@ -1,7 +1,7 @@
-import pyft as dd
+import relibmss as ms
 
 # def test_test1():
-#     bdd = dd.BddMgr()
+#     bdd = ms.BddMgr()
 #     c = bdd.vars(["c" + str(i) for i in range(61)])
     
 #     g62 = c[0] & c[1]
@@ -48,13 +48,13 @@ import pyft as dd
 #     g103 = g68 | c[42]
 #     g104 = g67 | c[43]
 #     g105 = g69 | c[44]
-#     g106 = dd.kofn(3, [g70, g71, g72, g73])
-#     g107 = dd.kofn(3, [g74, g75, g76, g77])
-#     g108 = dd.kofn(3, [g78, g79, g80, g81])
-#     g109 = dd.kofn(3, [g82, g83, g84, g85])
-#     g110 = dd.kofn(3, [g86, g87, g88, g89])
-#     g111 = dd.kofn(3, [g94, g95, g96, g97])
-#     g112 = dd.kofn(3, [g98, g99, g100, g101])
+#     g106 = ms.kofn(3, [g70, g71, g72, g73])
+#     g107 = ms.kofn(3, [g74, g75, g76, g77])
+#     g108 = ms.kofn(3, [g78, g79, g80, g81])
+#     g109 = ms.kofn(3, [g82, g83, g84, g85])
+#     g110 = ms.kofn(3, [g86, g87, g88, g89])
+#     g111 = ms.kofn(3, [g94, g95, g96, g97])
+#     g112 = ms.kofn(3, [g98, g99, g100, g101])
 #     g113 = g90 & g92
 #     g114 = g91 & g93
 #     g115 = g102 & g104
@@ -67,7 +67,7 @@ import pyft as dd
 #     g122 = g68 | g118 | c[48]
 #     g123 = g67 | g117 | c[49]
 #     g124 = g69 | g118 | c[50]
-#     g125 = dd.kofn(2, [g121, g123, g122, g124])
+#     g125 = ms.kofn(2, [g121, g123, g122, g124])
 #     g126 = g111 | g112 | g125 | c[52]
 #     g127 = g115 & g120
 #     g128 = g116 & g120
@@ -79,7 +79,7 @@ import pyft as dd
 #     g134 = g63 | g130 | c[58]
 #     g135 = g64 | g131 | c[59]
 #     g136 = g65 | g132 | c[60]
-#     g137 = dd.kofn(3, [g133, g134, g135, g136])
+#     g137 = ms.kofn(3, [g133, g134, g135, g136])
 #     g138 = g106 | g119 | g137
 
 #     assert bdd.size() > 0  # 簡単なチェックとしてBDDのサイズが0でないことを確認
@@ -87,12 +87,14 @@ import pyft as dd
 #     assert n is not None  # mcsの結果がNoneでないことを確認
 
 def test_test2():
-    bdd = dd.BddMgr()
+    bdd = ms.BddMgr()
     x, y, z = bdd.vars(["x", "y", "z"])
-    v = bdd.rpn("x y z | |")
+    v = bdd.rpn("x y z & &")
     assert v is not None  # RPN結果がNoneでないことを確認
     
     n = v.mcs()
+    print(n.dot())
+    print(n.extract())
     assert n is not None  # MCS結果がNoneでないことを確認
     
     probability = v.prob({"x": 0.1, "y": 0.2, "z": 0.01})
