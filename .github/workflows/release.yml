@@ -19,7 +19,10 @@ jobs:
         toolchain: stable
 
     - name: Install maturin
-      run: pip install maturin
+      run: pip install maturin==1.7.8
+
+    - name: Confirm varialbles
+      run: echo ${{ secrets.PYPI_USERNAME }} ${{ secrets.PYPI_PASSWORD }}
 
     - name: Build Python package
       run: maturin build --release
