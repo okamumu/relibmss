@@ -21,6 +21,13 @@ pub struct BddMgr {
     pub vars: RefCell<HashMap<String, bdd::BddNode>>,
 }
 
+#[pyclass(unsendable)]
+#[derive(Clone)]
+pub struct BddNode {
+    parent: Weak<RefCell<bdd::Bdd>>,
+    node: bdd::BddNode,
+}
+
 #[pymethods]
 impl BddMgr {
     // constructor
@@ -145,17 +152,10 @@ impl BddMgr {
     }
 }
 
-#[pyclass(unsendable)]
-#[derive(Clone)]
-pub struct BddNode {
-    bdd: Weak<RefCell<bdd::Bdd>>,
-    node: bdd::BddNode,
-}
-
 impl BddNode {
     pub fn new(bdd: Rc<RefCell<bdd::Bdd>>, node: bdd::BddNode) -> Self {
         BddNode {
-            bdd: Rc::downgrade(&bdd),
+            parent: Rc::downgrade(&bdd),
             node: node,
         }
     }
@@ -168,16 +168,11 @@ impl BddNode {
 #[pymethods]
 impl BddNode {
     pub fn dot(&self) -> String {
-        let mut buf = vec![];
-        {
-            let mut io = BufWriter::new(&mut buf);
-            self.node.dot(&mut io);
-        }
-        std::str::from_utf8(&buf).unwrap().to_string()
+        self.node.dot_string()
     }
 
     fn __and__(&self, other: &BddNode) -> BddNode {
-        let bdd = self.bdd.upgrade().unwrap();
+        let bdd = self.parent.upgrade().unwrap();
         BddNode::new(
             bdd.clone(),
             bdd.clone().borrow_mut().and(&self.node, &other.node),
@@ -185,7 +180,7 @@ impl BddNode {
     }
 
     fn __or__(&self, other: &BddNode) -> BddNode {
-        let bdd = self.bdd.upgrade().unwrap();
+        let bdd = self.parent.upgrade().unwrap();
         BddNode::new(
             bdd.clone(),
             bdd.clone().borrow_mut().or(&self.node, &other.node),
@@ -193,7 +188,7 @@ impl BddNode {
     }
 
     fn __xor__(&self, other: &BddNode) -> BddNode {
-        let bdd = self.bdd.upgrade().unwrap();
+        let bdd = self.parent.upgrade().unwrap();
         BddNode::new(
             bdd.clone(),
             bdd.clone().borrow_mut().xor(&self.node, &other.node),
@@ -201,17 +196,17 @@ impl BddNode {
     }
 
     fn __invert__(&self) -> BddNode {
-        let bdd = self.bdd.upgrade().unwrap();
+        let bdd = self.parent.upgrade().unwrap();
         BddNode::new(bdd.clone(), bdd.clone().borrow_mut().not(&self.node))
     }
 
     pub fn prob(&self, pv: HashMap<String, f64>) -> f64 {
-        let bdd = self.bdd.upgrade().unwrap();
+        let bdd = self.parent.upgrade().unwrap();
         ft::prob(&mut bdd.clone().borrow_mut(), &self.node, pv)
     }
 
     pub fn mcs(&self) -> BddNode {
-        let bdd = self.bdd.upgrade().unwrap();
+        let bdd = self.parent.upgrade().unwrap();
         BddNode::new(
             bdd.clone(),
             ft::minsol(&mut bdd.clone().borrow_mut(), &self.node),
@@ -219,7 +214,7 @@ impl BddNode {
     }
 
     pub fn extract(&self) -> Vec<Vec<String>> {
-        let bdd = self.bdd.upgrade().unwrap();
+        let bdd = self.parent.upgrade().unwrap();
         ft::extract(&mut bdd.clone().borrow_mut(), &self.node)
     }
 
@@ -230,7 +225,7 @@ impl BddNode {
 
 #[pyfunction]
 pub fn ifelse(cond: &BddNode, then: &BddNode, else_: &BddNode) -> BddNode {
-    let bdd = cond.bdd.upgrade().unwrap();
+    let bdd = cond.parent.upgrade().unwrap();
     BddNode::new(
         bdd.clone(),
         bdd.clone()
@@ -244,7 +239,7 @@ pub fn kofn(k: usize, nodes: Vec<BddNode>) -> PyResult<BddNode> {
     if nodes.len() < k {
         return Err(PyValueError::new_err("Invalid expression"));
     }
-    let bdd = nodes[0].bdd.upgrade().unwrap();
+    let bdd = nodes[0].parent.upgrade().unwrap();
     let nodes = nodes.iter().map(|n| n.node()).collect::<Vec<_>>();
     Ok(BddNode::new(
         bdd.clone(),

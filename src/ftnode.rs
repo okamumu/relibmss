@@ -10,7 +10,7 @@ use pyo3::prelude::*;
 
 use crate::bdd as pybdd;
 
-pub enum _Node {
+enum _Node {
     Basic {
         id: usize,
         name: String,
