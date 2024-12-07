@@ -1,9 +1,11 @@
 //
 
 use dd::bdd;
+use dd::bdd::Bdd;
 use dd::count::*;
 use dd::dot::Dot;
 use pyo3::exceptions::PyValueError;
+use std::collections::HashSet;
 use std::io::BufWriter;
 
 use std::cell::RefCell;
@@ -18,7 +20,7 @@ use crate::ft;
 #[pyclass(unsendable)]
 pub struct BddMgr {
     pub bdd: Rc<RefCell<bdd::Bdd>>,
-    pub vars: RefCell<HashMap<String, bdd::BddNode>>,
+    pub vars: HashMap<String, bdd::BddNode>,
 }
 
 #[pyclass(unsendable)]
@@ -35,7 +37,7 @@ impl BddMgr {
     pub fn new() -> Self {
         BddMgr {
             bdd: Rc::new(RefCell::new(bdd::Bdd::new())),
-            vars: RefCell::new(HashMap::new()),
+            vars: HashMap::new(),
         }
     }
 
@@ -55,100 +57,109 @@ impl BddMgr {
     }
 
     // var
-    pub fn var(&self, var: &str) -> BddNode {
-        let level = self.vars.borrow().len();
+    pub fn var(&mut self, var: &str) -> BddNode {
+        let level = self.vars.len();
         let mut bdd = self.bdd.borrow_mut();
         let h = bdd.header(level, var);
         let x0 = bdd.zero();
         let x1 = bdd.one();
         let node = bdd.create_node(&h, &x0, &x1);
-        self.vars.borrow_mut().insert(var.to_string(), node.clone());
+        self.vars.insert(var.to_string(), node.clone());
         BddNode::new(self.bdd.clone(), node)
     }
 
-    // vars
-    pub fn vars(&self, vars: Vec<&str>) -> Vec<BddNode> {
-        let mut bdd = self.bdd.borrow_mut();
-        let mut nodes = Vec::new();
-        for (level, v) in vars.iter().enumerate() {
-            let h = bdd.header(level, v);
-            let x0 = bdd.zero();
-            let x1 = bdd.one();
-            let b = vec![bdd.zero(), bdd.one()];
-            let node = bdd.create_node(&h, &x0, &x1);
-            self.vars.borrow_mut().insert(v.to_string(), node.clone());
-            let x = BddNode::new(self.bdd.clone(), node);
-            nodes.push(x);
-        }
-        nodes
-    }
-
-    pub fn rpn(&self, expr: &str) -> PyResult<BddNode> {
+    pub fn rpn(&mut self, expr: &str, vars: HashSet<String>) -> PyResult<BddNode> {
         let mut stack = Vec::new();
-        let mut bdd = self.bdd.borrow_mut();
+        // let mut bdd = self.bdd.borrow_mut();
         for token in expr.split_whitespace() {
             match token {
-                "0" => stack.push(bdd.zero()),
-                "1" => stack.push(bdd.one()),
+                "0" | "False" => {
+                    let bdd = self.bdd.borrow();
+                    stack.push(bdd.zero());
+                },
+                "1" | "True" => {
+                    let bdd = self.bdd.borrow();
+                    stack.push(bdd.one());
+                },
                 "&" => {
+                    let mut bdd = self.bdd.borrow_mut();
                     let right = stack.pop().unwrap();
                     let left = stack.pop().unwrap();
                     stack.push(bdd.and(&left, &right));
                 }
                 "|" => {
+                    let mut bdd = self.bdd.borrow_mut();
                     let right = stack.pop().unwrap();
                     let left = stack.pop().unwrap();
                     stack.push(bdd.or(&left, &right));
                 }
                 "^" => {
+                    let mut bdd = self.bdd.borrow_mut();
                     let right = stack.pop().unwrap();
                     let left = stack.pop().unwrap();
                     stack.push(bdd.xor(&left, &right));
                 }
                 "~" => {
+                    let mut bdd = self.bdd.borrow_mut();
                     let node = stack.pop().unwrap();
                     stack.push(bdd.not(&node));
                 }
                 "?" => {
+                    let mut bdd = self.bdd.borrow_mut();
                     let else_ = stack.pop().unwrap();
                     let then = stack.pop().unwrap();
                     let cond = stack.pop().unwrap();
                     stack.push(bdd.ite(&cond, &then, &else_));
                 }
                 _ => {
-                    if let Some(node) = self.vars.borrow().get(token) {
+                    if let Some(node) = self.vars.get(token) {
                         stack.push(node.clone());
+                    } else if let Some(_) = vars.get(token) {
+                            let node = self.var(token);
+                            self.vars.insert(token.to_string(), node.node.clone());
+                            stack.push(node.node.clone());
                     } else {
                         return Err(PyValueError::new_err("unknown token"));
                     }
                 }
             }
         }
-        if stack.len() != 1 {
+        if let Some(node) = stack.pop() {
+            return Ok(BddNode::new(self.bdd.clone(), node));
+        } else {
             return Err(PyValueError::new_err("Invalid expression"));
         }
-        Ok(BddNode::new(self.bdd.clone(), stack.pop().unwrap()))
     }
 
-    pub fn and(&self, nodes: Vec<BddNode>) -> BddNode {
-        let mut bdd = self.bdd.borrow_mut();
-        let bnodes = nodes.iter().map(|n| n.node()).collect::<Vec<_>>();
-        let result = ft::_and(&mut bdd, bnodes);
-        BddNode::new(self.bdd.clone(), result)
-    }
+    // pub fn and(&self, nodes: Vec<BddNode>) -> BddNode {
+    //     let mut bdd = self.bdd.borrow_mut();
+    //     let bnodes = nodes.iter().map(|n| n.node()).collect::<Vec<_>>();
+    //     let result = ft::_and(&mut bdd, bnodes);
+    //     BddNode::new(self.bdd.clone(), result)
+    // }
 
-    pub fn or(&self, nodes: Vec<BddNode>) -> BddNode {
-        let mut bdd = self.bdd.borrow_mut();
-        let bnodes = nodes.iter().map(|n| n.node()).collect::<Vec<_>>();
-        let result = ft::_or(&mut bdd, bnodes);
-        BddNode::new(self.bdd.clone(), result)
-    }
+    // pub fn or(&self, nodes: Vec<BddNode>) -> BddNode {
+    //     let mut bdd = self.bdd.borrow_mut();
+    //     let bnodes = nodes.iter().map(|n| n.node()).collect::<Vec<_>>();
+    //     let result = ft::_or(&mut bdd, bnodes);
+    //     BddNode::new(self.bdd.clone(), result)
+    // }
 
-    pub fn kofn(&self, k: usize, nodes: Vec<BddNode>) -> BddNode {
-        let mut bdd = self.bdd.borrow_mut();
-        let bnodes = nodes.iter().map(|n| n.node()).collect::<Vec<_>>();
-        let result = ft::kofn(&mut bdd, k, bnodes);
-        BddNode::new(self.bdd.clone(), result)
+    // pub fn kofn(&self, k: usize, nodes: Vec<BddNode>) -> BddNode {
+    //     let mut bdd = self.bdd.borrow_mut();
+    //     let bnodes = nodes.iter().map(|n| n.node()).collect::<Vec<_>>();
+    //     let result = ft::kofn(&mut bdd, k, bnodes);
+    //     BddNode::new(self.bdd.clone(), result)
+    // }
+
+    pub fn ifelse(&self, cond: &BddNode, then: &BddNode, else_: &BddNode) -> BddNode {
+        let bdd = self.bdd.clone();
+        BddNode::new(
+            bdd.clone(),
+            bdd.clone()
+                .borrow_mut()
+                .ite(&cond.node, &then.node, &else_.node),
+        )
     }
 }
 
@@ -223,26 +234,15 @@ impl BddNode {
     }
 }
 
-#[pyfunction]
-pub fn ifelse(cond: &BddNode, then: &BddNode, else_: &BddNode) -> BddNode {
-    let bdd = cond.parent.upgrade().unwrap();
-    BddNode::new(
-        bdd.clone(),
-        bdd.clone()
-            .borrow_mut()
-            .ite(&cond.node, &then.node, &else_.node),
-    )
-}
-
-#[pyfunction]
-pub fn kofn(k: usize, nodes: Vec<BddNode>) -> PyResult<BddNode> {
-    if nodes.len() < k {
-        return Err(PyValueError::new_err("Invalid expression"));
-    }
-    let bdd = nodes[0].parent.upgrade().unwrap();
-    let nodes = nodes.iter().map(|n| n.node()).collect::<Vec<_>>();
-    Ok(BddNode::new(
-        bdd.clone(),
-        ft::kofn(&mut bdd.clone().borrow_mut(), k, nodes),
-    ))
-}
+// #[pyfunction]
+// pub fn kofn(k: usize, nodes: Vec<BddNode>) -> PyResult<BddNode> {
+//     if nodes.len() < k {
+//         return Err(PyValueError::new_err("Invalid expression"));
+//     }
+//     let bdd = nodes[0].parent.upgrade().unwrap();
+//     let nodes = nodes.iter().map(|n| n.node()).collect::<Vec<_>>();
+//     Ok(BddNode::new(
+//         bdd.clone(),
+//         ft::kofn(&mut bdd.clone().borrow_mut(), k, nodes),
+//     ))
+// }

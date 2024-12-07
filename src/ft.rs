@@ -6,33 +6,33 @@ use dd::bdd::*;
 use dd::common::NodeId;
 use dd::nodes::NonTerminal;
 
-pub fn kofn(bdd: &mut Bdd, k: usize, nodes: Vec<BddNode>) -> BddNode {
-    match k {
-        1 => _or(bdd, nodes),
-        _ if nodes.len() == k => _and(bdd, nodes),
-        _ => {
-            let tmp1 = kofn(bdd, k - 1, nodes[1..].to_vec());
-            let tmp2 = kofn(bdd, k, nodes[1..].to_vec());
-            bdd.ite(&nodes[0], &tmp1, &tmp2)
-        }
-    }
-}
+// pub fn kofn(bdd: &mut Bdd, k: usize, nodes: Vec<BddNode>) -> BddNode {
+//     match k {
+//         1 => _or(bdd, nodes),
+//         _ if nodes.len() == k => _and(bdd, nodes),
+//         _ => {
+//             let tmp1 = kofn(bdd, k - 1, nodes[1..].to_vec());
+//             let tmp2 = kofn(bdd, k, nodes[1..].to_vec());
+//             bdd.ite(&nodes[0], &tmp1, &tmp2)
+//         }
+//     }
+// }
 
-pub fn _and(bdd: &mut Bdd, nodes: Vec<BddNode>) -> BddNode {
-    let mut res = bdd.one();
-    for node in nodes.iter() {
-        res = bdd.and(&res, &node);
-    }
-    res
-}
+// pub fn _and(bdd: &mut Bdd, nodes: Vec<BddNode>) -> BddNode {
+//     let mut res = bdd.one();
+//     for node in nodes.iter() {
+//         res = bdd.and(&res, &node);
+//     }
+//     res
+// }
 
-pub fn _or(bdd: &mut Bdd, nodes: Vec<BddNode>) -> BddNode {
-    let mut res = bdd.zero();
-    for node in nodes.iter() {
-        res = bdd.or(&res, &node);
-    }
-    res
-}
+// pub fn _or(bdd: &mut Bdd, nodes: Vec<BddNode>) -> BddNode {
+//     let mut res = bdd.zero();
+//     for node in nodes.iter() {
+//         res = bdd.or(&res, &node);
+//     }
+//     res
+// }
 
 // prob
 pub fn prob(bdd: &mut Bdd, node: &BddNode, pv: HashMap<String, f64>) -> f64 {
