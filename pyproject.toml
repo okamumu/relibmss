@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "relibmss"
-version = "0.1.1"
+version = "0.2.0"
 authors = [{ name = "Hiroyuki Okamura", email = "okamu@hiroshima-u.ac.jp" }]
 description = "A Python package for binary/multi state systems"
 readme = "README.md"
@@ -12,3 +12,6 @@ license = { text = "MIT" }
 
 [tool.maturin]
 bindings = "pyo3"
+include = [
+    "relibmss/**/*"
+]

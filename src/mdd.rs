@@ -1,21 +1,15 @@
 use core::panic;
 use std::cell::RefCell;
-use std::f32::consts::E;
 use std::rc::Rc;
 use std::rc::Weak;
 
-use std::fmt::Display;
-
 use dd::dot::Dot;
-use dd::mdd::Mdd;
 use dd::mtmdd2;
 use dd::mtmdd2::build_from_rpn;
 use dd::mtmdd2::gen_var;
 use pyo3::exceptions::PyValueError;
 use pyo3::pyclass;
 use pyo3::pymethods;
-use pyo3::PyAny;
-use pyo3::PyRef;
 use pyo3::PyResult;
 use std::collections::HashMap;
 

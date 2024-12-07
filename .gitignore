@@ -20,3 +20,4 @@ Cargo.lock
 # venv
 .venv/
 
+relibmss/relibmss.cpython*

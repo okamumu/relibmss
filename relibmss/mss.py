@@ -1,21 +1,5 @@
 import relibmss as ms
 
-class Context:
-    def __init__(self):
-        self.vars = {}
-        self.mdd = ms.MddMgr()
-
-    def var(self, name, domain):
-        self.vars[name] = domain
-        return _Expression(name)
-    
-    def __str__(self):
-        return str(self.vars)
-    
-    def getmdd(self, _Expression):
-        rpn = _Expression.to_rpn()
-        return self.mdd.rpn(rpn, self.vars)
-
 class _Expression:
     def __init__(self, value):
         self.value = value
@@ -80,41 +64,41 @@ class _Expression:
             return ' '.join([x.to_rpn() for x in self.value])
         return str(self.value)
 
-def And(args: list):
-    if len(args) == 1:
-        return args[0]
-    x = args[0]
-    for y in args[1:]:
-        x = _Expression((x, y, _Expression('&&')))
-    return x
+class Context:
+    def __init__(self):
+        self.vars = {}
+        self.mdd = ms.MddMgr()
 
-def Or(args: list):
-    if len(args) == 1:
-        return args[0]
-    x = args[0]
-    for y in args[1:]:
-        x = _Expression((x, y, _Expression('||')))
-    return x
-
-def Not(arg: _Expression):
-    return _Expression((arg, _Expression('!')))
-
-def IfThenElse(condition: _Expression, then_expr: _Expression, else_expr: _Expression):
-    return _Expression((condition, then_expr, else_expr, _Expression('?')))
+    def var(self, name, domain):
+        self.vars[name] = domain
+        return _Expression(name)
     
+    def __str__(self):
+        return str(self.vars)
+    
+    def getmdd(self, _Expression):
+        rpn = _Expression.to_rpn()
+        return self.mdd.rpn(rpn, self.vars)
 
-# 使用例
-if __name__ == "__main__":
-    ctx = Context()
-    x = ctx.var("x", range(2))
-    y = ctx.var("y", range(3))
-    z = ctx.var("z", range(3))
-    v = x * y + z
-    v = And([x >= 1, y <= 1, z == 0])
-    print(v)
+    def And(self, args: list):
+        if len(args) == 1:
+            return args[0]
+        x = args[0]
+        for y in args[1:]:
+            x = _Expression((x, y, _Expression('&&')))
+        return x
 
-    tree = ctx.mdd.rpn("x 1 >= y 1 <= &&", ctx.vars)
-    tree2 = ctx.getmdd(v)
+    def Or(self, args: list):
+        if len(args) == 1:
+            return args[0]
+        x = args[0]
+        for y in args[1:]:
+            x = _Expression((x, y, _Expression('||')))
+        return x
 
-    print(tree.dot())
-    print(tree2.dot())
+    def Not(self, arg: _Expression):
+        return _Expression((arg, _Expression('!')))
+
+    def IfThenElse(self, condition: _Expression, then_expr: _Expression, else_expr: _Expression):
+        return _Expression((condition, then_expr, else_expr, _Expression('?')))
+
