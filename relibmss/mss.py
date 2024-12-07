@@ -67,7 +67,7 @@ class _Expression:
 class Context:
     def __init__(self):
         self.vars = {}
-        self.mdd = ms.MddMgr()
+        self.mdd = ms.MDD()
 
     def var(self, name, domain):
         self.vars[name] = domain

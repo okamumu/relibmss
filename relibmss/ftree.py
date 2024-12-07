@@ -27,7 +27,7 @@ class _Expression:
 class Context:
     def __init__(self):
         self.vars = set([])
-        self.bdd = ms.BddMgr()
+        self.bdd = ms.BDD()
 
     def var(self, name):
         self.vars.add(name)
