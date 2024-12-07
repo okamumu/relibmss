@@ -155,12 +155,135 @@ impl MddMgr {
             Err(PyValueError::new_err("Invalid expression"))
         }
     }
+
+    pub fn _and(&mut self, nodes: Vec<MddNode>) -> MddNode {
+        let mut mdd = self.mdd.borrow_mut();
+        let xs = nodes.iter().map(|x| &x.node).collect::<Vec<_>>();
+        let mut result = mdd.one();
+        for node in xs {
+            result = mdd.and(&result, &node);
+        }
+        MddNode::new(self.mdd.clone(), result)
+    }
+
+    pub fn _or(&mut self, nodes: Vec<MddNode>) -> MddNode {
+        let mut mdd = self.mdd.borrow_mut();
+        let xs = nodes.iter().map(|x| &x.node).collect::<Vec<_>>();
+        let mut result = mdd.zero();
+        for node in xs {
+            result = mdd.or(&result, &node);
+        }
+        MddNode::new(self.mdd.clone(), result)
+    }
+
+    pub fn _not(&mut self, node: &MddNode) -> MddNode {
+        let mut mdd = self.mdd.borrow_mut();
+        let result = mdd.not(&node.node);
+        MddNode::new(self.mdd.clone(), result)
+    }
+
+    pub fn ifelse(&mut self, cond: &MddNode, then: &MddNode, els: &MddNode) -> MddNode {
+        let mut mdd = self.mdd.borrow_mut();
+        let result = mdd.ifelse(&cond.node, &then.node, &els.node);
+        MddNode::new(self.mdd.clone(), result)
+    }
 }
 
 #[pymethods]
 impl MddNode {
     pub fn dot(&self) -> String {
         self.node.dot_string()
+    }
+
+    fn add(&self, other: &MddNode) -> MddNode {
+        let mddmgr = self.parent.upgrade().unwrap();
+        let mut mdd = mddmgr.borrow_mut();
+        let node = mdd.add(&self.node, &other.node);
+        MddNode::new(self.parent.upgrade().unwrap(), node)
+    }
+
+    fn sub(&self, other: &MddNode) -> MddNode {
+        let mddmgr = self.parent.upgrade().unwrap();
+        let mut mdd = mddmgr.borrow_mut();
+        let node = mdd.sub(&self.node, &other.node);
+        MddNode::new(self.parent.upgrade().unwrap(), node)
+    }
+
+    fn mul(&self, other: &MddNode) -> MddNode {
+        let mddmgr = self.parent.upgrade().unwrap();
+        let mut mdd = mddmgr.borrow_mut();
+        let node = mdd.mul(&self.node, &other.node);
+        MddNode::new(self.parent.upgrade().unwrap(), node)
+    }
+
+    fn div(&self, other: &MddNode) -> MddNode {
+        let mddmgr = self.parent.upgrade().unwrap();
+        let mut mdd = mddmgr.borrow_mut();
+        let node = mdd.div(&self.node, &other.node);
+        MddNode::new(self.parent.upgrade().unwrap(), node)
+    }
+
+    fn eq(&self, other: &MddNode) -> MddNode {
+        let mddmgr = self.parent.upgrade().unwrap();
+        let mut mdd = mddmgr.borrow_mut();
+        let node = mdd.eq(&self.node, &other.node);
+        MddNode::new(self.parent.upgrade().unwrap(), node)
+    }
+
+    fn ne(&self, other: &MddNode) -> MddNode {
+        let mddmgr = self.parent.upgrade().unwrap();
+        let mut mdd = mddmgr.borrow_mut();
+        let node = mdd.neq(&self.node, &other.node);
+        MddNode::new(self.parent.upgrade().unwrap(), node)
+    }
+
+    fn lt(&self, other: &MddNode) -> MddNode {
+        let mddmgr = self.parent.upgrade().unwrap();
+        let mut mdd = mddmgr.borrow_mut();
+        let node = mdd.lt(&self.node, &other.node);
+        MddNode::new(self.parent.upgrade().unwrap(), node)
+    }
+
+    fn le(&self, other: &MddNode) -> MddNode {
+        let mddmgr = self.parent.upgrade().unwrap();
+        let mut mdd = mddmgr.borrow_mut();
+        let node = mdd.lte(&self.node, &other.node);
+        MddNode::new(self.parent.upgrade().unwrap(), node)
+    }
+
+    fn gt(&self, other: &MddNode) -> MddNode {
+        let mddmgr = self.parent.upgrade().unwrap();
+        let mut mdd = mddmgr.borrow_mut();
+        let node = mdd.gt(&self.node, &other.node);
+        MddNode::new(self.parent.upgrade().unwrap(), node)
+    }
+
+    fn ge(&self, other: &MddNode) -> MddNode {
+        let mddmgr = self.parent.upgrade().unwrap();
+        let mut mdd = mddmgr.borrow_mut();
+        let node = mdd.gte(&self.node, &other.node);
+        MddNode::new(self.parent.upgrade().unwrap(), node)
+    }
+
+    fn value(&self, other: i64) -> MddNode {
+        let mddmgr = self.parent.upgrade().unwrap();
+        let mut mdd = mddmgr.borrow_mut();
+        let node = mdd.value(other);
+        MddNode::new(self.parent.upgrade().unwrap(), node)
+    }
+
+    fn boolean(&self, other: bool) -> MddNode {
+        if other {
+            let mddmgr = self.parent.upgrade().unwrap();
+            let mut mdd = mddmgr.borrow_mut();
+            let node = mdd.one();
+            MddNode::new(self.parent.upgrade().unwrap(), node)
+        } else {
+            let mddmgr = self.parent.upgrade().unwrap();
+            let mut mdd = mddmgr.borrow_mut();
+            let node = mdd.zero();
+            MddNode::new(self.parent.upgrade().unwrap(), node)
+        }
     }
 }
 

@@ -2,9 +2,9 @@ import relibmss as ms
 
 def test_ft1():
     ctx = ms.FTree()
-    x = ctx.var("x")
-    y = ctx.var("y")
-    z = ctx.var("z")
+    x = ctx.defvar("x")
+    y = ctx.defvar("y")
+    z = ctx.defvar("z")
     v = x & y | z
     u = ctx.kofn(2, [x, y, z])
     print(u)
@@ -12,9 +12,9 @@ def test_ft1():
 
 def test_mss():
     ctx = ms.MSS()
-    x = ctx.var("x", range(2))
-    y = ctx.var("y", range(3))
-    z = ctx.var("z", range(3))
+    x = ctx.defvar("x", range(2))
+    y = ctx.defvar("y", range(3))
+    z = ctx.defvar("z", range(3))
     v = x * y + z
     v = ctx.And([x >= 1, y <= 1, z == 0])
     print(v)
@@ -27,7 +27,7 @@ def test_mss():
 
 def test_ft2():
     ft = ms.FTree()
-    c = [ft.var("c" + str(i)) for i in range(61)]
+    c = [ft.defvar("c" + str(i)) for i in range(61)]
     
     g62 = c[0] & c[1]
     g63 = c[0] & c[2]
@@ -119,3 +119,74 @@ def test_ft2():
     print(bdd.count())
     mcs = bdd.mcs()
     print(mcs.extract())
+
+def test_mss3():
+    mss = ms.MSS()
+    x = mss.defvar("x", range(3))
+    y = mss.defvar("y", range(3))
+    z = mss.defvar("z", range(3))
+    s1 = mss.IfThenElse(x + y == z, 100, 200)
+    print(s1)
+    tree = mss.getmdd(s1)
+    print(tree.dot())
+
+def test_mdd():
+    mdd = ms.MDD()
+    x = mdd.defvar("x", range(3))
+    y = mdd.defvar("y", range(3))
+    z = mdd.defvar("z", range(3))
+    # tree = mdd.rpn("x y + z == 100 200 ?", {})
+    # print(tree.dot())
+
+def test_bdd1():
+    bdd = ms.BDD()
+    x = bdd.defvar("x")
+    y = bdd.defvar("y")
+    z = bdd.defvar("z")
+    v = x & y | z
+    print(v)
+    print(v.dot())
+
+def test_mdd2():
+    mdd = ms.MDD()
+    x = mdd.defvar("x", range(3))
+    y = mdd.defvar("y", range(3))
+    z = mdd.defvar("z", range(3))
+    v = x + y == z + 1
+    print(v.dot())
+    v2 = mdd.IfThenElse(x + y == z, 100, 200)
+    print(v2.dot())
+    v3 = mdd.IfThenElse(mdd.And([x + y == z, x == z]), 100, 200)
+    print(v3.dot())
+
+def test_mdd3():
+    mdd = ms.MDD()
+    x = mdd.defvar("x", range(3))
+    y = mdd.defvar("y", range(3))
+    z = mdd.defvar("z", range(3))
+    v = mdd.IfThenElse(x + y == z, 100, 200)
+    print(v.dot())
+
+def test_mdd4():
+    mdd = ms.MDD()
+    x = mdd.defvar("x", range(3))
+    y = mdd.defvar("y", range(3))
+    z = mdd.defvar("z", range(3))
+    v = mdd.IfThenElse(mdd.And([x + y == z, x == z]), 100, 200)
+    print(v.dot())
+
+def test_mdd5():
+    mdd = ms.MDD()
+    x = mdd.defvar("x", range(3))
+    y = mdd.defvar("y", range(3))
+    z = mdd.defvar("z", range(3))
+    v = mdd.IfThenElse(mdd.Or([x + y == z, x == z]), 100, 200)
+    print(v.dot())
+
+def test_mdd5():
+    mdd = ms.MDD()
+    x = mdd.defvar("x", range(10))
+    y = mdd.defvar("y", range(3))
+    z = mdd.defvar("z", range(3))
+    v = mdd.IfThenElse(mdd.Not(mdd.Or([x + y == z, x == z])), 100, 200)
+    print(v.dot())
