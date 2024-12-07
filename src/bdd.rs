@@ -1,12 +1,10 @@
 //
 
 use dd::bdd;
-use dd::bdd::Bdd;
 use dd::count::*;
 use dd::dot::Dot;
 use pyo3::exceptions::PyValueError;
 use std::collections::HashSet;
-use std::io::BufWriter;
 
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -56,16 +54,28 @@ impl BddMgr {
         BddNode::new(self.bdd.clone(), self.bdd.borrow().one())
     }
 
-    // var
-    pub fn var(&mut self, var: &str) -> BddNode {
-        let level = self.vars.len();
-        let mut bdd = self.bdd.borrow_mut();
-        let h = bdd.header(level, var);
-        let x0 = bdd.zero();
-        let x1 = bdd.one();
-        let node = bdd.create_node(&h, &x0, &x1);
-        self.vars.insert(var.to_string(), node.clone());
-        BddNode::new(self.bdd.clone(), node)
+    // defvar
+    pub fn defvar(&mut self, var: &str) -> BddNode {
+        if let Some(node) = self.vars.get(var) {
+            return BddNode::new(self.bdd.clone(), node.clone());
+        } else {
+            let level = self.vars.len();
+            let mut bdd = self.bdd.borrow_mut();
+            let h = bdd.header(level, var);
+            let x0 = bdd.zero();
+            let x1 = bdd.one();
+            let node = bdd.create_node(&h, &x0, &x1);
+            self.vars.insert(var.to_string(), node.clone());
+            BddNode::new(self.bdd.clone(), node)
+        }
+    }
+
+    pub fn var(&self, var: &str) -> Option<BddNode> {
+        if let Some(node) = self.vars.get(var) {
+            return Some(BddNode::new(self.bdd.clone(), node.clone()));
+        } else {
+            return None;
+        }
     }
 
     pub fn rpn(&mut self, expr: &str, vars: HashSet<String>) -> PyResult<BddNode> {
@@ -115,7 +125,7 @@ impl BddMgr {
                     if let Some(node) = self.vars.get(token) {
                         stack.push(node.clone());
                     } else if let Some(_) = vars.get(token) {
-                            let node = self.var(token);
+                            let node = self.defvar(token);
                             self.vars.insert(token.to_string(), node.node.clone());
                             stack.push(node.node.clone());
                     } else {

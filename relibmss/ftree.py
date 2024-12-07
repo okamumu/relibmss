@@ -72,4 +72,3 @@ class Context:
             return self.And(args)
         else:
             return self.IfThenElse(args[0], self.kofn(k-1, args[1:]), self.kofn(k, args[1:]))
-

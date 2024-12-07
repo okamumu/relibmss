@@ -64,14 +64,18 @@ impl MddMgr {
     }
 
     pub fn defvar(&mut self, label: &str, range: Vec<i64>) -> MddNode {
-        let level = self.vars.len();
-        let result = {
-            let mut mdd = self.mdd.borrow_mut();
-            let node = gen_var(&mut mdd, label, level, &range);
-            MddNode::new(self.mdd.clone(), node)
-        };
-        self.vars.insert(label.to_string(), result.clone());
-        result
+        if let Some(node) = self.vars.get(label) {
+            return node.clone();
+        } else {
+            let level = self.vars.len();
+            let result = {
+                let mut mdd = self.mdd.borrow_mut();
+                let node = gen_var(&mut mdd, label, level, &range);
+                MddNode::new(self.mdd.clone(), node)
+            };
+            self.vars.insert(label.to_string(), result.clone());
+            result
+        }
     }
 
     pub fn var(&self, label: &str) -> Option<MddNode> {
