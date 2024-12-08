@@ -16,12 +16,12 @@ class _Expression:
 
     def __str__(self):
         if isinstance(self.value, tuple):
-            return ' '.join([x.to_rpn() for x in self.value])
+            return ' '.join([str(x) for x in self.value])
         return str(self.value)
 
-    def to_rpn(self):
+    def _to_rpn(self):
         if isinstance(self.value, tuple):
-            return ' '.join([x.to_rpn() for x in self.value])
+            return ' '.join([x._to_rpn() for x in self.value])
         return str(self.value)
 
 class Context:
@@ -39,7 +39,7 @@ class Context:
     def getbdd(self, arg: _Expression):
         if not isinstance(arg, _Expression):
             arg = _Expression(arg)
-        rpn = arg.to_rpn()
+        rpn = arg._to_rpn()
         return self.bdd.rpn(rpn, self.vars)
 
     def And(self, args: list):
@@ -90,3 +90,17 @@ class Context:
             return self.And(args)
         else:
             return self.IfThenElse(args[0], self.kofn(k-1, args[1:]), self.kofn(k, args[1:]))
+
+    def prob(self, arg: _Expression, values: dict):
+        top = self.getbdd(arg)
+        return top.prob(values)
+    
+    def prob_interval(self, arg: _Expression, values: dict):
+        values = {k: ms.Interval(v[0], v[1]) for k, v in values.items()}
+        top = self.getbdd(arg)
+        return top.prob_interval(values)
+
+    def mcs(self, arg: _Expression):
+        top = self.getbdd(arg)
+        return top.mcs()
+

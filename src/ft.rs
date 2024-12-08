@@ -1,6 +1,7 @@
 // mod ft
 
 use std::collections::HashMap;
+use std::ops::{Add, Sub, Mul};
 
 use dd::bdd::*;
 use dd::common::NodeId;
@@ -35,30 +36,48 @@ use dd::nodes::NonTerminal;
 // }
 
 // prob
-pub fn prob(bdd: &mut Bdd, node: &BddNode, pv: HashMap<String, f64>) -> f64 {
+pub fn prob<T>(bdd: &mut Bdd, node: &BddNode, pv: HashMap<String, T>) -> T 
+where
+    T: Add<Output = T>
+        + Sub<Output = T>
+        + Mul<Output = T>
+        + Clone
+        + Copy
+        + PartialEq
+        + From<f64>,
+{
     let cache = &mut HashMap::new();
     _prob(bdd, &node, &pv, cache)
 }
 
-fn _prob(
+fn _prob<T>(
     bdd: &mut Bdd,
     node: &BddNode,
-    pv: &HashMap<String, f64>,
-    cache: &mut HashMap<NodeId, f64>,
-) -> f64 {
+    pv: &HashMap<String, T>,
+    cache: &mut HashMap<NodeId, T>,
+) -> T
+where
+    T: Add<Output = T>
+        + Sub<Output = T>
+        + Mul<Output = T>
+        + Clone
+        + Copy
+        + PartialEq
+        + From<f64>,
+{
     let key = node.id();
     match cache.get(&key) {
         Some(x) => x.clone(),
         None => {
             let result = match node {
-                BddNode::Zero => 1.0,
-                BddNode::One => 0.0,
+                BddNode::Zero => T::from(1.0),
+                BddNode::One => T::from(0.0),
                 BddNode::NonTerminal(fnode) => {
                     let x = fnode.header().label();
-                    let fp = pv.get(x).unwrap_or(&0.0).clone();
+                    let fp = *pv.get(x).unwrap_or(&T::from(0.0));
                     let low = _prob(bdd, &fnode[0], pv, cache);
                     let high = _prob(bdd, &fnode[1], pv, cache);
-                    fp * low + (1.0 - fp) * high
+                    fp * low + (T::from(1.0) - fp) * high
                 }
             };
             cache.insert(key, result);

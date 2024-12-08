@@ -14,6 +14,7 @@ use std::rc::Weak;
 use pyo3::prelude::*;
 
 use crate::ft;
+use crate::interval::Interval;
 
 #[pyclass(unsendable)]
 pub struct BddMgr {
@@ -222,6 +223,11 @@ impl BddNode {
     }
 
     pub fn prob(&self, pv: HashMap<String, f64>) -> f64 {
+        let bdd = self.parent.upgrade().unwrap();
+        ft::prob(&mut bdd.clone().borrow_mut(), &self.node, pv)
+    }
+
+    pub fn prob_interval(&self, pv: HashMap<String, Interval>) -> Interval {
         let bdd = self.parent.upgrade().unwrap();
         ft::prob(&mut bdd.clone().borrow_mut(), &self.node, pv)
     }
