@@ -64,6 +64,11 @@ class _Expression:
             return ' '.join([x.to_rpn() for x in self.value])
         return str(self.value)
 
+class _Case:
+    def __init__(self, cond, then):
+        self.cond = cond
+        self.then = then
+
 class Context:
     def __init__(self):
         self.vars = {}
@@ -72,6 +77,10 @@ class Context:
     def defvar(self, name, domain):
         self.vars[name] = domain
         return _Expression(name)
+    
+    def set_varorder(self, x: dict):
+        for varname in sorted(x, key=x.get):
+            self.mdd.defvar(varname, self.vars[varname])
     
     def __str__(self):
         return str(self.vars)
@@ -113,7 +122,7 @@ class Context:
             arg = _Expression(arg)
         return _Expression((arg, _Expression('!')))
 
-    def IfThenElse(self, condition: _Expression, then_expr: _Expression, else_expr: _Expression):
+    def ifelse(self, condition: _Expression, then_expr: _Expression, else_expr: _Expression):
         if not isinstance(condition, _Expression):
             condition = _Expression(condition)
         if not isinstance(then_expr, _Expression):
@@ -121,4 +130,24 @@ class Context:
         if not isinstance(else_expr, _Expression):
             else_expr = _Expression(else_expr)
         return _Expression((condition, then_expr, else_expr, _Expression('?')))
+    
+    def case(self, then, cond = None):
+        if not isinstance(cond, _Expression):
+            cond = _Expression(cond)
+        if not isinstance(then, _Expression):
+            then = _Expression(then)
+        return _Case(cond=cond, then=then)
+    
+    def switch(self, conds: list):
+        assert len(conds) >= 2
+        if len(conds) == 2:
+            assert isinstance(conds[0], _Case) and isinstance(conds[1], _Case)
+            return self.ifelse(conds[0].cond, conds[0].then, conds[1].then)
+        else:
+            x = conds[0]
+            if not isinstance(x, _Case):
+                raise ValueError("The element must be a Case object")
+            return self.ifelse(x.cond, x.then, self.switch(conds[1:]))
+
+
 

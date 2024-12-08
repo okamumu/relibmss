@@ -63,14 +63,15 @@ impl MddMgr {
         MddNode::new(self.mdd.clone(), node)
     }
 
-    pub fn defvar(&mut self, label: &str, range: Vec<i64>) -> MddNode {
+    pub fn defvar(&mut self, label: &str, range: usize) -> MddNode {
         if let Some(node) = self.vars.get(label) {
             return node.clone();
         } else {
             let level = self.vars.len();
             let result = {
                 let mut mdd = self.mdd.borrow_mut();
-                let node = gen_var(&mut mdd, label, level, &range);
+                let range_ = (0..range).map(|x| x as i64).collect::<Vec<_>>(); // TODO: it should be changed in gen_var
+                let node = gen_var(&mut mdd, label, level, &range_);
                 MddNode::new(self.mdd.clone(), node)
             };
             self.vars.insert(label.to_string(), result.clone());
@@ -86,7 +87,7 @@ impl MddMgr {
         }
     }
 
-    pub fn rpn(&mut self, rpn: &str, vars: HashMap<String,Vec<i64>>) -> PyResult<MddNode> {
+    pub fn rpn(&mut self, rpn: &str, vars: HashMap<String,usize>) -> PyResult<MddNode> {
         let tokens = rpn
             .split_whitespace()
             .map(|x| {
@@ -300,9 +301,9 @@ mod tests {
         let one = mgr.one();
         let two = mgr.val(2);
         let mut vars = HashMap::new();
-        vars.insert("x".to_string(), vec![0, 1, 2]);
-        vars.insert("y".to_string(), vec![0, 1, 2]);
-        vars.insert("z".to_string(), vec![0, 1, 2]);
+        vars.insert("x".to_string(), 3);
+        vars.insert("y".to_string(), 3);
+        vars.insert("z".to_string(), 3);
         // println!("vars: {:?}", mgr.vars.borrow());
         let rpn = "x y z + *";
         if let Ok(node) = mgr.rpn(rpn, vars) {

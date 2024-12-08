@@ -73,7 +73,7 @@ class Context:
             arg = _Expression(arg)
         return _Expression((arg, _Expression('!')))
 
-    def IfThenElse(self, condition: _Expression, then_expr: _Expression, else_expr: _Expression):
+    def ifelse(self, condition: _Expression, then_expr: _Expression, else_expr: _Expression):
         if not isinstance(condition, _Expression):
             condition = _Expression(condition)
         if not isinstance(then_expr, _Expression):
@@ -89,7 +89,7 @@ class Context:
         elif k == len(args):
             return self.And(args)
         else:
-            return self.IfThenElse(args[0], self.kofn(k-1, args[1:]), self.kofn(k, args[1:]))
+            return self.ifelse(args[0], self.kofn(k-1, args[1:]), self.kofn(k, args[1:]))
 
     def prob(self, arg: _Expression, values: dict):
         top = self.getbdd(arg)
