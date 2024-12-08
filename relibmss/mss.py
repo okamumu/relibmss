@@ -149,5 +149,14 @@ class Context:
                 raise ValueError("The element must be a Case object")
             return self.ifelse(x.cond, x.then, self.switch(conds[1:]))
 
+    def prob(self, arg: _Expression, values: dict):
+        top = self.getmdd(arg)
+        return top.prob(values)
+        
+    def prob_interval(self, arg: _Expression, values: dict):
+        values = {k: [ms.Interval(u[0], u[1]) for u in v] for k, v in values.items()}
+        top = self.getmdd(arg)
+        return top.prob_interval(values)
+
 
 

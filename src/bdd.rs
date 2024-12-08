@@ -13,7 +13,7 @@ use std::rc::Weak;
 
 use pyo3::prelude::*;
 
-use crate::ft;
+use crate::algo;
 use crate::interval::Interval;
 
 #[pyclass(unsendable)]
@@ -224,25 +224,25 @@ impl BddNode {
 
     pub fn prob(&self, pv: HashMap<String, f64>) -> f64 {
         let bdd = self.parent.upgrade().unwrap();
-        ft::prob(&mut bdd.clone().borrow_mut(), &self.node, pv)
+        algo::prob(&mut bdd.clone().borrow_mut(), &self.node, pv)
     }
 
     pub fn prob_interval(&self, pv: HashMap<String, Interval>) -> Interval {
         let bdd = self.parent.upgrade().unwrap();
-        ft::prob(&mut bdd.clone().borrow_mut(), &self.node, pv)
+        algo::prob(&mut bdd.clone().borrow_mut(), &self.node, pv)
     }
 
     pub fn mcs(&self) -> BddNode {
         let bdd = self.parent.upgrade().unwrap();
         BddNode::new(
             bdd.clone(),
-            ft::minsol(&mut bdd.clone().borrow_mut(), &self.node),
+            algo::minsol(&mut bdd.clone().borrow_mut(), &self.node),
         )
     }
 
     pub fn extract(&self) -> Vec<Vec<String>> {
         let bdd = self.parent.upgrade().unwrap();
-        ft::extract(&mut bdd.clone().borrow_mut(), &self.node)
+        algo::extract(&mut bdd.clone().borrow_mut(), &self.node)
     }
 
     pub fn count(&self) -> (usize, u64) {

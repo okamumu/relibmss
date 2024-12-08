@@ -1,6 +1,6 @@
 use pyo3::{pymodule, types::PyModule, PyResult, Python};
 
-pub mod ft;
+pub mod algo;
 pub mod bdd;
 
 pub mod interval;

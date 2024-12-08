@@ -13,6 +13,9 @@ use pyo3::pymethods;
 use pyo3::PyResult;
 use std::collections::HashMap;
 
+use crate::algo;
+use crate::interval::Interval;
+
 #[pyclass(unsendable)]
 pub struct MddMgr {
     mdd: Rc<RefCell<mtmdd2::MtMdd2<i64>>>,
@@ -285,6 +288,18 @@ impl MddNode {
             let node = mdd.zero();
             MddNode::new(self.parent.upgrade().unwrap(), node)
         }
+    }
+
+    fn prob(&mut self, pv: HashMap<String, Vec<f64>>) -> HashMap<i64, f64> {
+        let mgr = self.parent.upgrade().unwrap();
+        let mut mdd = mgr.borrow_mut();
+        algo::mddprob(&mut mdd, &self.node, pv)
+    }
+
+    fn prob_interval(&mut self, pv: HashMap<String, Vec<Interval>>) -> HashMap<i64, Interval> {
+        let mgr = self.parent.upgrade().unwrap();
+        let mut mdd = mgr.borrow_mut();
+        algo::mddprob(&mut mdd, &self.node, pv)
     }
 }
 
