@@ -1,3 +1,7 @@
+# v0.3.0
+
+- First release
+
 # v0.2.0
 
 - change to use python codes to reduce the complexity
