@@ -1,3 +1,7 @@
+# v0.4.0
+
+- Add the function to draw the MDD
+
 # v0.3.0
 
 - First release

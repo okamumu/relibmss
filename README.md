@@ -208,7 +208,154 @@ print(mcs.extract())
 
 ## Multi-state system
 
-This has not been implemented yet.
+### Definition of Gate
+
+MSS does not have default gates. Users need to define gates by themselves. The operation that can be used in the definition of a gate is as follows:
+
+- Arithmetic operations: `+`, `-`, `*`, `/`
+- Comparison operations: `==`, `!=`, `>`, `<`, `>=`, `<=`
+- Logical operations:
+    - `mss.And`: AND gate
+    - `mss.Or`: OR gate
+    - `mss.Not`: NOT gate
+    - `mss.switch`: Switch-case structure
+    - `mss.case`: Case structure
+
+```python
+import relibmss as ms
+
+# def for a gate with switch-case structure
+def gate1(mss, x, y):
+    return mss.switch([
+        mss.case(cond=mss.And([x == 0, y == 0]), then=0),
+        mss.case(cond=mss.Or([x == 0, y == 0]), then=1),
+        mss.case(cond=mss.Or([x == 2, y == 2]), then=3),
+        mss.case(cond=None, then=2) # default
+    ])
+```
+
+### Example of a multi-state system
+
+```python
+import relibmss as ms
+
+# Define gates
+def gate1(mss, x, y):
+    return mss.switch([
+        mss.case(cond=mss.And([x == 0, y == 0]), then=0),
+        mss.case(cond=mss.Or([x == 0, y == 0]), then=1),
+        mss.case(cond=mss.Or([x == 2, y == 2]), then=3),
+        mss.case(cond=None, then=2) # default
+    ])
+
+def gate2(mss, x, y):
+    return mss.switch([
+        mss.case(cond=x == 0, then=0),
+        mss.case(cond=None, then=y)
+    ])
+
+mss = ms.MSS() # Context for the multi-state system
+
+# Define variables
+
+A = mss.defvar('A', 2) # 2 states
+B = mss.defvar('B', 3) # 3 states
+C = mss.defvar('C', 3) # 3 states
+
+# Define a multi-state system
+sx = gate1(mss, B, C)
+ss = gate2(mss, A, sx)
+
+# Define probabilities
+prob = {
+    'A': [0.1, 0.9],
+    'B': [0.2, 0.3, 0.5],
+    'C': [0.3, 0.4, 0.3]
+}
+
+# Calculate the probability
+print(mss.prob(ss, prob))
+```
+
+### Draw an MDD
+
+```python
+import relibmss as ms
+
+# Define gates
+def gate1(mss, x, y):
+    return mss.switch([
+        mss.case(cond=mss.And([x == 0, y == 0]), then=0),
+        mss.case(cond=mss.Or([x == 0, y == 0]), then=1),
+        mss.case(cond=mss.Or([x == 2, y == 2]), then=3),
+        mss.case(cond=None, then=2) # default
+    ])
+
+def gate2(mss, x, y):
+    return mss.switch([
+        mss.case(cond=x == 0, then=0),
+        mss.case(cond=None, then=y)
+    ])
+
+mss = ms.MSS()
+
+A = mss.defvar('A', 2)
+B = mss.defvar('B', 3)
+C = mss.defvar('C', 3)
+
+# Define the order of variables
+# this should be done before making MDD
+mss.set_varorder({"A": 2, "B": 1, "C": 0})
+
+sx = gate1(mss, B, C)
+ss = gate2(mss, A, sx)
+
+mdd = mss.getmdd(ss)
+source = mdd.dot()
+
+from graphviz import Source
+from IPython.display import Image, display
+Image(Source(source).pipe(format='png'))
+```
+
+### Obtain the minimal vector sets
+
+```python
+import relibmss as ms
+
+# Define gates
+def gate1(mss, x, y):
+    return mss.switch([
+        mss.case(cond=mss.And([x == 0, y == 0]), then=0),
+        mss.case(cond=mss.Or([x == 0, y == 0]), then=1),
+        mss.case(cond=mss.Or([x == 2, y == 2]), then=3),
+        mss.case(cond=None, then=2) # default
+    ])
+
+def gate2(mss, x, y):
+    return mss.switch([
+        mss.case(cond=x == 0, then=0),
+        mss.case(cond=None, then=y)
+    ])
+
+mss = ms.MSS()
+
+A = mss.defvar('A', 2)
+B = mss.defvar('B', 3)
+C = mss.defvar('C', 3)
+
+sx = gate1(mss, B, C)
+ss = gate2(mss, A, sx)
+
+mdd = mss.mvs(ss)
+print(mdd.dot())
+```
+
+## TODO
+
+- Add more examples
+- Add more functions for fault tree analysis
+- Add more functions for multi-state system analysis
 
 ## License
 

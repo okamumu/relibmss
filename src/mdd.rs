@@ -302,7 +302,7 @@ impl MddNode {
         mdd_algo::mddprob(&mut mdd, &self.node, pv)
     }
 
-    fn mcs(&mut self) -> MddNode {
+    fn mvs(&mut self) -> MddNode {
         let mgr = self.parent.upgrade().unwrap();
         let mut mdd = mgr.borrow_mut();
         let node = mdd_algo::mddminsol(&mut mdd, &self.node);

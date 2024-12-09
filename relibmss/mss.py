@@ -157,6 +157,10 @@ class Context:
         values = {k: [ms.Interval(u[0], u[1]) for u in v] for k, v in values.items()}
         top = self.getmdd(arg)
         return top.prob_interval(values)
+    
+    def mvs(self, arg: _Expression):
+        top = self.getmdd(arg)
+        return top.mvs()
 
 
 

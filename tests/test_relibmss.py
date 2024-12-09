@@ -292,7 +292,7 @@ def test_mss11():
     ss = gate2(A, sx)
 
     mdd = ctx.getmdd(ss) # this is the time when MDD is created
-    v = mdd.mcs()
+    v = mdd.mvs()
     print(v.dot())
 
 def test_mss12():
@@ -319,5 +319,33 @@ def test_mss12():
     ss = gate2(A, sx)
 
     mdd = ctx.getmdd(ss) # this is the time when MDD is created
-    v = mdd.mcs()
+    v = mdd.mvs()
+    print(v.dot())
+
+def test_mss13():
+    def gate1(ctx, x, y):
+        return ctx.switch([
+            ctx.case(cond=ctx.And([x == 0, y == 0]), then=0),
+            ctx.case(cond=ctx.Or([x == 0, y == 0]), then=1),
+            ctx.case(cond=ctx.Or([x == 2, y == 2]), then=3),
+            ctx.case(cond=None, then=2)
+        ])
+
+    # def gate2(ctx, x, y):
+    #     return ctx.switch([
+    #         ctx.case(cond=x == 0, then=0),
+    #         ctx.case(cond=None, then=y)
+    #     ])
+
+    ctx = ms.MSS()
+    x = ctx.defvar("x", 3)
+    y = ctx.defvar("y", 3)
+    xdash = ctx.defvar("xdash", 3)
+    ydash = ctx.defvar("ydash", 3)
+
+    # gate1 is the increasing function or not?
+    ss = ctx.ifelse(ctx.And([x <= xdash, y <= ydash]), gate1(ctx, x, y) <= gate1(ctx, xdash, ydash), True)
+    print(ss)
+
+    v = ctx.getmdd(ss)
     print(v.dot())
