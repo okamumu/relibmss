@@ -13,8 +13,8 @@ use pyo3::pymethods;
 use pyo3::PyResult;
 use std::collections::HashMap;
 
-use crate::algo;
 use crate::interval::Interval;
+use crate::mdd_algo;
 
 #[pyclass(unsendable)]
 pub struct MddMgr {
@@ -90,7 +90,7 @@ impl MddMgr {
         }
     }
 
-    pub fn rpn(&mut self, rpn: &str, vars: HashMap<String,usize>) -> PyResult<MddNode> {
+    pub fn rpn(&mut self, rpn: &str, vars: HashMap<String, usize>) -> PyResult<MddNode> {
         let tokens = rpn
             .split_whitespace()
             .map(|x| {
@@ -279,12 +279,12 @@ impl MddNode {
     fn boolean(&self, other: bool) -> MddNode {
         if other {
             let mddmgr = self.parent.upgrade().unwrap();
-            let mut mdd = mddmgr.borrow_mut();
+            let mdd = mddmgr.borrow();
             let node = mdd.one();
             MddNode::new(self.parent.upgrade().unwrap(), node)
         } else {
             let mddmgr = self.parent.upgrade().unwrap();
-            let mut mdd = mddmgr.borrow_mut();
+            let mdd = mddmgr.borrow();
             let node = mdd.zero();
             MddNode::new(self.parent.upgrade().unwrap(), node)
         }
@@ -293,13 +293,20 @@ impl MddNode {
     fn prob(&mut self, pv: HashMap<String, Vec<f64>>) -> HashMap<i64, f64> {
         let mgr = self.parent.upgrade().unwrap();
         let mut mdd = mgr.borrow_mut();
-        algo::mddprob(&mut mdd, &self.node, pv)
+        mdd_algo::mddprob(&mut mdd, &self.node, pv)
     }
 
     fn prob_interval(&mut self, pv: HashMap<String, Vec<Interval>>) -> HashMap<i64, Interval> {
         let mgr = self.parent.upgrade().unwrap();
         let mut mdd = mgr.borrow_mut();
-        algo::mddprob(&mut mdd, &self.node, pv)
+        mdd_algo::mddprob(&mut mdd, &self.node, pv)
+    }
+
+    fn mcs(&mut self) -> MddNode {
+        let mgr = self.parent.upgrade().unwrap();
+        let mut mdd = mgr.borrow_mut();
+        let node = mdd_algo::mddminsol(&mut mdd, &self.node);
+        MddNode::new(self.parent.upgrade().unwrap(), node)
     }
 }
 

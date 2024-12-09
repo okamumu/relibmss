@@ -1,13 +1,11 @@
 use pyo3::{pymodule, types::PyModule, PyResult, Python};
 
-pub mod algo;
-pub mod bdd;
-
 pub mod interval;
 
+pub mod bdd;
+pub mod bdd_algo;
 pub mod mdd;
-
-//pub mod pymod;
+pub mod mdd_algo;
 
 #[pymodule]
 pub fn relibmss(_py: Python, m: &PyModule) -> PyResult<()> {

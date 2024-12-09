@@ -13,7 +13,7 @@ use std::rc::Weak;
 
 use pyo3::prelude::*;
 
-use crate::algo;
+use crate::bdd_algo;
 use crate::interval::Interval;
 
 #[pyclass(unsendable)]
@@ -87,11 +87,11 @@ impl BddMgr {
                 "0" | "False" => {
                     let bdd = self.bdd.borrow();
                     stack.push(bdd.zero());
-                },
+                }
                 "1" | "True" => {
                     let bdd = self.bdd.borrow();
                     stack.push(bdd.one());
-                },
+                }
                 "&" => {
                     let mut bdd = self.bdd.borrow_mut();
                     let right = stack.pop().unwrap();
@@ -126,9 +126,9 @@ impl BddMgr {
                     if let Some(node) = self.vars.get(token) {
                         stack.push(node.clone());
                     } else if let Some(_) = vars.get(token) {
-                            let node = self.defvar(token);
-                            self.vars.insert(token.to_string(), node.node.clone());
-                            stack.push(node.node.clone());
+                        let node = self.defvar(token);
+                        self.vars.insert(token.to_string(), node.node.clone());
+                        stack.push(node.node.clone());
                     } else {
                         return Err(PyValueError::new_err("unknown token"));
                     }
@@ -224,41 +224,37 @@ impl BddNode {
 
     pub fn prob(&self, pv: HashMap<String, f64>) -> f64 {
         let bdd = self.parent.upgrade().unwrap();
-        algo::prob(&mut bdd.clone().borrow_mut(), &self.node, pv)
+        let mut cache = HashMap::new();
+        bdd_algo::prob(&mut bdd.clone().borrow_mut(), &self.node, &pv, &mut cache)
     }
 
     pub fn prob_interval(&self, pv: HashMap<String, Interval>) -> Interval {
         let bdd = self.parent.upgrade().unwrap();
-        algo::prob(&mut bdd.clone().borrow_mut(), &self.node, pv)
+        let mut cache = HashMap::new();
+        bdd_algo::prob(&mut bdd.clone().borrow_mut(), &self.node, &pv, &mut cache)
     }
 
     pub fn mcs(&self) -> BddNode {
         let bdd = self.parent.upgrade().unwrap();
-        BddNode::new(
-            bdd.clone(),
-            algo::minsol(&mut bdd.clone().borrow_mut(), &self.node),
-        )
+        let mut cache1 = HashMap::new();
+        let mut cache2 = HashMap::new();
+        let result = bdd_algo::minsol(
+            &mut bdd.clone().borrow_mut(),
+            &self.node,
+            &mut cache1,
+            &mut cache2,
+        );
+        BddNode::new(bdd.clone(), result)
     }
 
     pub fn extract(&self) -> Vec<Vec<String>> {
-        let bdd = self.parent.upgrade().unwrap();
-        algo::extract(&mut bdd.clone().borrow_mut(), &self.node)
+        let mut path = Vec::new();
+        let mut pathset = Vec::new();
+        bdd_algo::extract(&self.node, &mut path, &mut pathset);
+        pathset
     }
 
     pub fn count(&self) -> (usize, u64) {
         self.node.count()
     }
 }
-
-// #[pyfunction]
-// pub fn kofn(k: usize, nodes: Vec<BddNode>) -> PyResult<BddNode> {
-//     if nodes.len() < k {
-//         return Err(PyValueError::new_err("Invalid expression"));
-//     }
-//     let bdd = nodes[0].parent.upgrade().unwrap();
-//     let nodes = nodes.iter().map(|n| n.node()).collect::<Vec<_>>();
-//     Ok(BddNode::new(
-//         bdd.clone(),
-//         ft::kofn(&mut bdd.clone().borrow_mut(), k, nodes),
-//     ))
-// }

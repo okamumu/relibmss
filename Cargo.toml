@@ -8,10 +8,9 @@ homepage = "https://github.com/okamumu/relibmss"
 documentation = "https://github.com/okamumu/relibmss"
 
 [lib]
-name = "relibmss"
 crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = { version = "0.18.3", features = ["extension-module"] }
-dd = { version = "0.2.0", git = "https://github.com/okamumu/rust-dd.git" }
-
+dd = { git = "https://github.com/okamumu/rust-dd.git" }
+itertools = { version = "0.11" }

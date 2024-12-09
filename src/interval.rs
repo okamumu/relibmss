@@ -1,5 +1,5 @@
-use std::ops::{Add, Sub, Mul, Div};
 use pyo3::prelude::*;
+use std::ops::{Add, Div, Mul, Sub};
 
 #[pyclass]
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -65,13 +65,13 @@ impl Div for Interval {
         if other.lower <= 0.0 && other.upper >= 0.0 {
             panic!("Division by an interval containing zero is not allowed");
         }
-        let reciprocals = [
-            1.0 / other.lower,
-            1.0 / other.upper,
-        ];
+        let reciprocals = [1.0 / other.lower, 1.0 / other.upper];
         let reciprocal_interval = Interval::new(
             reciprocals.iter().cloned().fold(f64::INFINITY, f64::min),
-            reciprocals.iter().cloned().fold(f64::NEG_INFINITY, f64::max),
+            reciprocals
+                .iter()
+                .cloned()
+                .fold(f64::NEG_INFINITY, f64::max),
         );
         self * reciprocal_interval
     }
