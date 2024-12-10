@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::ops::{Add, Mul, Sub};
 
 use dd::common::NodeId;
-use dd::mtmdd;
+use dd::{mdd, mtmdd};
 use dd::mtmdd2;
 use dd::nodes::NonTerminal;
 use dd::nodes::Terminal;
@@ -80,6 +80,12 @@ pub fn mddminsol(
             let result = vmddminsol(&mut mdd.mtmdd_mut(), &fnode, &mut cache1, &mut cache2);
             mtmdd2::MtMdd2Node::Value(result)
         }
+        mtmdd2::MtMdd2Node::Bool(fnode) => {
+            let mut cache1 = HashMap::new();
+            let mut cache2 = HashMap::new();
+            let result = bmddminsol(&mut mdd.mdd_mut(), &fnode, &mut cache1, &mut cache2);
+            mtmdd2::MtMdd2Node::Bool(result)
+        }
         _ => panic!("Not implemented yet"),
     }
 }
@@ -118,10 +124,45 @@ fn vmddminsol(
     }
 }
 
+fn bmddminsol(
+    dd: &mut mdd::Mdd,
+    node: &mdd::MddNode,
+    cache1: &mut HashMap<NodeId, mdd::MddNode>,
+    cache2: &mut HashMap<(NodeId, NodeId), mdd::MddNode>,
+) -> mdd::MddNode {
+    let key = node.id();
+    match cache1.get(&key) {
+        Some(x) => x.clone(),
+        None => {
+            let result = match node {
+                mdd::MddNode::Zero => dd.undet(),
+                mdd::MddNode::One => node.clone(),
+                mdd::MddNode::NonTerminal(fnode) => {
+                    let mut result = Vec::new();
+                    for (i, x) in fnode.iter().enumerate() {
+                        if i == 0 {
+                            let tmp = bmddminsol(dd, &x, cache1, cache2);
+                            result.push(tmp);
+                        } else {
+                            let tmp = bmddminsol(dd, &x, cache1, cache2);
+                            let tmp2 = bmdd_without(dd, &fnode[i - 1], &tmp, cache2);
+                            result.push(tmp2);
+                        }
+                    }
+                    dd.create_node(fnode.header(), &result)
+                }
+                mdd::MddNode::Undet => dd.undet(),
+            };
+            cache1.insert(key, result.clone());
+            result
+        }
+    }
+}
+
 fn vmdd_without(
     mdd: &mut mtmdd::MtMdd<i64>,
     f: &mtmdd::MtMddNode<i64>,
-    g: &mtmdd::MtMddNode<i64>,
+    g: &mtmdd::MtMddNode<i64>, // minsol tree
     cache: &mut HashMap<(NodeId, NodeId), mtmdd::MtMddNode<i64>>,
 ) -> mtmdd::MtMddNode<i64> {
     let key = (f.id(), g.id());
@@ -155,27 +196,75 @@ fn vmdd_without(
                 (mtmdd::MtMddNode::NonTerminal(fnode), mtmdd::MtMddNode::NonTerminal(gnode))
                     if fnode.header().level() > gnode.header().level() =>
                 {
-                    let tmp: Vec<_> = fnode
-                        .iter()
-                        .map(|f| vmdd_without(mdd, &f, &g, cache))
-                        .collect();
-                    mdd.create_node(fnode.header(), &tmp)
+                    vmdd_without(mdd, &fnode[0], &g, cache)
                 }
                 (mtmdd::MtMddNode::NonTerminal(fnode), mtmdd::MtMddNode::NonTerminal(gnode))
                     if fnode.header().level() < gnode.header().level() =>
                 {
-                    // let tmp: Vec<_> = gnode
-                    //     .iter()
-                    //     .map(|g| vmdd_without(mdd, &f, &g, cache))
-                    //     .collect();
-                    // mdd.create_node(gnode.header(), &tmp)
-                    vmdd_without(mdd, &f, &gnode[0], cache)
+                    let tmp: Vec<_> = gnode
+                        .iter()
+                        .map(|g| vmdd_without(mdd, &f, &g, cache))
+                        .collect();
+                    mdd.create_node(gnode.header(), &tmp)
                 }
                 (mtmdd::MtMddNode::NonTerminal(fnode), mtmdd::MtMddNode::NonTerminal(gnode)) => {
                     let tmp: Vec<_> = fnode
                         .iter()
                         .zip(gnode.iter())
                         .map(|(f, g)| vmdd_without(mdd, &f, &g, cache))
+                        .collect();
+                    mdd.create_node(fnode.header(), &tmp)
+                }
+            };
+            cache.insert(key, result.clone());
+            result
+        }
+    }
+}
+
+fn bmdd_without(
+    mdd: &mut mdd::Mdd,
+    f: &mdd::MddNode,
+    g: &mdd::MddNode, // minsol tree
+    cache: &mut HashMap<(NodeId, NodeId), mdd::MddNode>,
+) -> mdd::MddNode {
+    let key = (f.id(), g.id());
+    match cache.get(&key) {
+        Some(x) => x.clone(),
+        None => {
+            let result = match (f, g) {
+                (mdd::MddNode::Undet, _) => g.clone(),
+                (_, mdd::MddNode::Undet) => mdd.undet(),
+                (mdd::MddNode::Zero, mdd::MddNode::One) => mdd.one(),
+                (mdd::MddNode::Zero, _) => g.clone(),
+                (_, mdd::MddNode::Zero) => mdd.undet(), // probably this case is inpossible
+                (mdd::MddNode::One, _) => mdd.undet(),
+                (mdd::MddNode::NonTerminal(fnode), mdd::MddNode::One) => {
+                    let tmp: Vec<_> = fnode
+                        .iter()
+                        .map(|f| bmdd_without(mdd, &f, &g, cache))
+                        .collect();
+                    mdd.create_node(fnode.header(), &tmp)
+                }
+                (mdd::MddNode::NonTerminal(fnode), mdd::MddNode::NonTerminal(gnode))
+                    if fnode.header().level() > gnode.header().level() =>
+                {
+                    bmdd_without(mdd, &fnode[0], &g, cache)
+                }
+                (mdd::MddNode::NonTerminal(fnode), mdd::MddNode::NonTerminal(gnode))
+                    if fnode.header().level() < gnode.header().level() =>
+                {
+                    let tmp: Vec<_> = gnode
+                        .iter()
+                        .map(|g| bmdd_without(mdd, &f, &g, cache))
+                        .collect();
+                    mdd.create_node(gnode.header(), &tmp)
+                }
+                (mdd::MddNode::NonTerminal(fnode), mdd::MddNode::NonTerminal(gnode)) => {
+                    let tmp: Vec<_> = fnode
+                        .iter()
+                        .zip(gnode.iter())
+                        .map(|(f, g)| bmdd_without(mdd, &f, &g, cache))
                         .collect();
                     mdd.create_node(fnode.header(), &tmp)
                 }

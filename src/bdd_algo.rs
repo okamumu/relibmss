@@ -65,7 +65,7 @@ pub fn minsol(
 
 pub fn bdd_without(
     dd: &mut bdd::Bdd,
-    f: &bdd::BddNode,
+    f: &bdd::BddNode, // minsol tree
     g: &bdd::BddNode,
     cache: &mut HashMap<(NodeId, NodeId), bdd::BddNode>,
 ) -> bdd::BddNode {
@@ -77,7 +77,12 @@ pub fn bdd_without(
                 (bdd::BddNode::Zero, _) => dd.zero(),
                 (_, bdd::BddNode::Zero) => f.clone(),
                 (_, bdd::BddNode::One) => dd.zero(),
-                (bdd::BddNode::One, _) => dd.one(),
+                (bdd::BddNode::One, bdd::BddNode::Zero) => dd.one(),
+                (bdd::BddNode::One, bdd::BddNode::NonTerminal(gnode)) => {
+                    let low = bdd_without(dd, f, &gnode[0], cache);
+                    let high = bdd_without(dd, f, &gnode[1], cache);
+                    dd.create_node(gnode.header(), &low, &high)
+                },
                 (bdd::BddNode::NonTerminal(fnode), bdd::BddNode::NonTerminal(gnode))
                     if fnode.id() == gnode.id() =>
                 {

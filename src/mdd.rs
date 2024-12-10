@@ -1,4 +1,5 @@
-use core::panic;
+use dd::count::*;
+use dd::mdd;
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::rc::Weak;
@@ -308,12 +309,24 @@ impl MddNode {
         let node = mdd_algo::mddminsol(&mut mdd, &self.node);
         MddNode::new(self.parent.upgrade().unwrap(), node)
     }
+
+    pub fn count(&self) -> (usize, u64) {
+        match &self.node {
+            mtmdd2::MtMdd2Node::Value(x) => {
+                x.count()
+            },
+            mtmdd2::MtMdd2Node::Bool(x) => {
+                x.count()
+            },
+            mtmdd2::MtMdd2Node::Undet => {
+                (0, 0)
+            },
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use std::vec;
-
     use super::*;
 
     #[test]

@@ -106,7 +106,7 @@ def test_ft3():
     print(ctx.getbdd(u).dot())
     print("prob:", ctx.prob(u, {"x": 0.3, "y": 0.2, "z": 0.1}))
     m = ctx.mcs(u)
-    print(m.extract())
+    print('mcs: ', m.extract())
 
 def test_interval4():
     x = ms.Interval(0, 1)
