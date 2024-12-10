@@ -18,10 +18,12 @@ jobs:
       with:
         toolchain: stable
 
-    - name: Install cibuildwheel
-      run: pip install cibuildwheel
+    - name: Install maturin
+      run: pip install maturin>=1.7,<2.0
 
     - name: Build wheels
+      env:
+        CIBW_SKIP: cp36-*
       run: cibuildwheel --output-dir dist
 
     - name: Publish to PyPI
