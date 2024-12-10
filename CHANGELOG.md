@@ -1,3 +1,7 @@
+# v0.4.4
+
+- add aarch64 support
+
 # v0.4.3
 
 - Add the function to calculate the prob for Bool-type MDD
