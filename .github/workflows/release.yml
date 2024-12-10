@@ -18,13 +18,14 @@ jobs:
       with:
         toolchain: stable
 
-    - name: Install maturin
-      run: pip install maturin==1.7.8
+    - name: Install cibuildwheel
+      run: pip install cibuildwheel
 
-    - name: Build Python package
-      run: maturin build --release
+    - name: Build wheels
+      run: cibuildwheel --output-dir dist
 
-    - name: Build and publish
+    - name: Publish to PyPI
       env:
-        MATURIN_PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
-      run: maturin publish --non-interactive
+        TWINE_USERNAME: "__token__"
+        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+      run: python -m twine upload dist/*
