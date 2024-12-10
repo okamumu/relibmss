@@ -1,3 +1,7 @@
+# v0.4.1
+
+- Bug fix: the bug of without 
+
 # v0.4.0
 
 - Add the function to draw the MDD
