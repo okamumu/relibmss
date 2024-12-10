@@ -19,21 +19,21 @@ jobs:
         toolchain: stable
 
     - name: Install dependencies
-          run: |
-            sudo apt-get update
-            sudo apt-get install -y python3-pip
-            pip install maturin==1.7.8
-            curl -fsSL https://ziglang.org/download/0.11.0/zig-linux-x86_64-0.11.0.tar.xz | tar -xJ
-            export PATH=$PWD/zig-linux-x86_64-0.11.0:$PATH
+        - run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip
+          pip install maturin==1.7.8
+          curl -fsSL https://ziglang.org/download/0.11.0/zig-linux-x86_64-0.11.0.tar.xz | tar -xJ
+          export PATH=$PWD/zig-linux-x86_64-0.11.0:$PATH
 
     - name: Install maturin
       run: pip install maturin==1.7.8
 
     - name: Build Python package
-      run: maturin build --target x86_64-unknown-linux-gnu --release
+      run: maturin build --target x86_64-unknown-linux-gnu --release --zig
 
     - name: Build Python package
-      run: maturin build --target aarch64-unknown-linux-gnu --release
+      run: maturin build --target aarch64-unknown-linux-gnu --release --zig
 
     - name: Build and publish
       env:
