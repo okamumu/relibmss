@@ -19,7 +19,7 @@ jobs:
         toolchain: stable
 
     - name: Install maturin
-      run: pip install maturin>=1.7,<2.0
+      run: pip install "maturin>=1.7,<2.0"
 
     - name: Build wheels
       env:
