@@ -1,15 +1,5 @@
 import relibmss as ms
 
-def test_ft1():
-    ctx = ms.FTree()
-    x = ctx.defvar("x")
-    y = ctx.defvar("y")
-    z = ctx.defvar("z")
-    v = x & y | z
-    u = ctx.kofn(2, [x, y, z])
-    print(u)
-    print(ctx.getbdd(u).dot())
-
 def test_mss():
     ctx = ms.MSS()
     x = ctx.defvar("x", 2)
@@ -95,37 +85,6 @@ def test_mdd5():
     z = mdd.defvar("z", 3)
     v = mdd.ifelse(mdd.Not(mdd.Or([x + y == z, x == z])), 100, 200)
     print(v.dot())
-
-def test_ft3():
-    ctx = ms.FTree()
-    x = ctx.defvar("x")
-    y = ctx.defvar("y")
-    z = ctx.defvar("z")
-    u = ctx.kofn(2, [x, y, z])
-    print(u)
-    print(ctx.getbdd(u).dot())
-    print("prob:", ctx.prob(u, {"x": 0.3, "y": 0.2, "z": 0.1}))
-    m = ctx.mcs(u)
-    print('mcs: ', m.extract())
-
-def test_interval4():
-    x = ms.Interval(0, 1)
-    print(x)
-
-def test_interval5():
-    ctx = ms.FTree()
-    x = ctx.defvar("x")
-    y = ctx.defvar("y")
-    z = ctx.defvar("z")
-    u = ctx.kofn(2, [x, y, z])
-    print(u)
-    print(ctx.getbdd(u).dot())
-    problist = {
-        "x": (1.0e-3, 1.0e-2),
-        "y": (1.0e-4, 1.0e-3),
-        "z": (1.0e-3, 1.0e-2)
-    }
-    print("prob:", ctx.prob_interval(u, problist))
 
 def test_mss6():
     ctx = ms.MSS()
@@ -349,3 +308,57 @@ def test_mss13():
 
     v = ctx.getmdd(ss)
     print(v.dot())
+
+def test_mss13():
+    ctx = ms.MSS()
+    A = ctx.defvar("A", 2)
+    B = ctx.defvar("B", 3)
+    C = ctx.defvar("C", 3)
+
+    def gate1(x, y):
+        return ctx.switch([
+            ctx.case(cond=ctx.And([x == 0, y == 0]), then=0),
+            ctx.case(cond=ctx.Or([x == 0, y == 0]), then=1),
+            ctx.case(cond=ctx.Or([x == 2, y == 2]), then=3),
+            ctx.case(cond=None, then=2)
+        ])
+
+    def gate2(x, y):
+        return ctx.switch([
+            ctx.case(cond=x == 0, then=0),
+            ctx.case(cond=None, then=y)
+        ])    
+
+    sx = gate1(B, C)
+    ss = gate2(A, sx)
+
+    mdd = ctx.getmdd(ss) # this is the time when MDD is created
+    v = mdd.mvs()
+    print(v.dot())
+
+def test_mss14():
+    ctx = ms.MSS()
+    A = ctx.defvar("A", 2)
+    B = ctx.defvar("B", 3)
+    C = ctx.defvar("C", 3)
+
+    def gate1(x, y):
+        return ctx.switch([
+            ctx.case(cond=ctx.And([x == 0, y == 0]), then= x == y),
+            ctx.case(cond=ctx.Or([x == 0, y == 0]), then=x != y),
+            ctx.case(cond=ctx.Or([x == 2, y == 2]), then=x <= y),
+            ctx.case(cond=None, then=False)
+        ])
+
+    sx = gate1(B, C)
+
+    mdd = ctx.getmdd(sx)
+    v = mdd.mvs()
+    print(v.dot())
+
+    prob = {
+        "B": [0.5, 0.5, 0.0],
+        "C": [0.5, 0.2, 0.3]
+    }
+
+    print(ctx.prob(sx, prob))

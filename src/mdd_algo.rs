@@ -21,8 +21,12 @@ where
         mtmdd2::MtMdd2Node::Value(fnode) => {
             let mut cache = HashMap::new();
             vmddprob(&mut mdd.mtmdd_mut(), &fnode, &pv, &mut cache)
-        }
-        _ => panic!("Not implemented yet"),
+        },
+        mtmdd2::MtMdd2Node::Bool(fnode) => {
+            let mut cache = HashMap::new();
+            bmddprob(&mut mdd.mdd_mut(), &fnode, &pv, &mut cache)
+        },
+        _ => panic!("The node should be either Value or Bool"),
     }
 }
 
@@ -69,6 +73,55 @@ where
     }
 }
 
+fn bmddprob<T>(
+    mdd: &mut mdd::Mdd,
+    node: &mdd::MddNode,
+    pv: &HashMap<String, Vec<T>>,
+    cache: &mut HashMap<NodeId, HashMap<i64, T>>,
+) -> HashMap<i64, T>
+where
+    T: Add<Output = T> + Sub<Output = T> + Mul<Output = T> + Clone + Copy + PartialEq + From<f64>,
+{
+    let key = node.id();
+    match cache.get(&key) {
+        Some(x) => x.clone(),
+        None => {
+            let result = match node {
+                mdd::MddNode::Zero => {
+                    let mut map = HashMap::new();
+                    let value = 0;
+                    map.insert(value, T::from(1.0));
+                    map
+                },
+                mdd::MddNode::One => {
+                    let mut map = HashMap::new();
+                    let value = 1;
+                    map.insert(value, T::from(1.0));
+                    map
+                },
+                mdd::MddNode::NonTerminal(fnode) => {
+                    let label = fnode.header().label();
+                    let fp = pv.get(label).unwrap();
+                    let mut map = HashMap::new();
+                    for (i, x) in fnode.iter().enumerate() {
+                        let tmp = bmddprob(mdd, &x, pv, cache);
+                        for (k, v) in tmp.iter() {
+                            let key = *k;
+                            let value = *v;
+                            let entry = map.entry(key).or_insert(T::from(0.0));
+                            *entry = *entry + fp[i] * value;
+                        }
+                    }
+                    map
+                },
+                mdd::MddNode::Undet => HashMap::new(),
+            };
+            cache.insert(key, result.clone());
+            result
+        }
+    }
+}
+
 pub fn mddminsol(
     mdd: &mut mtmdd2::MtMdd2<i64>,
     node: &mtmdd2::MtMdd2Node<i64>,
@@ -86,7 +139,7 @@ pub fn mddminsol(
             let result = bmddminsol(&mut mdd.mdd_mut(), &fnode, &mut cache1, &mut cache2);
             mtmdd2::MtMdd2Node::Bool(result)
         }
-        _ => panic!("Not implemented yet"),
+        _ => panic!("The node should be either Value or Bool"),
     }
 }
 

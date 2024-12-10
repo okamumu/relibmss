@@ -1,3 +1,7 @@
+# v0.4.3
+
+- Add the function to calculate the prob for Bool-type MDD
+
 # v0.4.1
 
 - Bug fix: the bug of without 
