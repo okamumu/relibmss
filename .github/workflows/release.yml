@@ -21,9 +21,10 @@ jobs:
     - name: Install maturin
       run: pip install "maturin>=1.7,<2.0"
 
+    - name: Install cibuildwheel
+      run: pip install cibuildwheel
+
     - name: Build wheels
-      env:
-        CIBW_SKIP: cp36-*
       run: cibuildwheel --output-dir dist
 
     - name: Publish to PyPI
