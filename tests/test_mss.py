@@ -251,7 +251,7 @@ def test_mss11():
     ss = gate2(A, sx)
 
     mdd = ctx.getmdd(ss) # this is the time when MDD is created
-    v = mdd.mvs()
+    v = mdd.mpvs()
     print(v.dot())
 
 def test_mss12():
@@ -278,7 +278,7 @@ def test_mss12():
     ss = gate2(A, sx)
 
     mdd = ctx.getmdd(ss) # this is the time when MDD is created
-    v = mdd.mvs()
+    v = mdd.mpvs()
     print(v.dot())
 
 def test_mss13():
@@ -333,7 +333,7 @@ def test_mss13():
     ss = gate2(A, sx)
 
     mdd = ctx.getmdd(ss) # this is the time when MDD is created
-    v = mdd.mvs()
+    v = mdd.mpvs()
     print(v.dot())
 
 def test_mss14():
@@ -353,7 +353,7 @@ def test_mss14():
     sx = gate1(B, C)
 
     mdd = ctx.getmdd(sx)
-    v = mdd.mvs()
+    v = mdd.mpvs()
     print(v.dot())
 
     prob = {

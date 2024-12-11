@@ -1,5 +1,17 @@
 import relibmss as ms
 
+def _to_rpn(expr):
+    stack = [expr]
+    rpn = []
+    while len(stack) > 0:
+        node = stack.pop()
+        if isinstance(node.value, tuple):
+            for i in range(len(node.value) - 1, -1, -1):
+                stack.append(node.value[i])
+        else:
+            rpn.append(str(node.value))
+    return ' '.join(rpn)
+
 class _Expression:
     def __init__(self, value):
         self.value = value
@@ -56,12 +68,12 @@ class _Expression:
     
     def __str__(self):
         if isinstance(self.value, tuple):
-            return ' '.join([x.to_rpn() for x in self.value])
+            return _to_rpn(self)
         return str(self.value)
 
     def to_rpn(self):
         if isinstance(self.value, tuple):
-            return ' '.join([x.to_rpn() for x in self.value])
+            return _to_rpn(self)
         return str(self.value)
 
 class _Case:
@@ -89,7 +101,11 @@ class Context:
         if not isinstance(arg, _Expression):
             arg = _Expression(arg)
         rpn = arg.to_rpn()
+        print(rpn)
         return self.mdd.rpn(rpn, self.vars)
+    
+    def const(self, value):
+        return _Expression(value)
 
     def And(self, args: list):
         assert len(args) > 0
@@ -158,9 +174,9 @@ class Context:
         top = self.getmdd(arg)
         return top.prob_interval(values)
     
-    def mvs(self, arg: _Expression):
+    def mpvs(self, arg: _Expression):
         top = self.getmdd(arg)
-        return top.mvs()
+        return top.mpvs()
 
 
 

@@ -1,5 +1,17 @@
 import relibmss as ms
 
+def _to_rpn(expr):
+    stack = [expr]
+    rpn = []
+    while len(stack) > 0:
+        node = stack.pop()
+        if isinstance(node.value, tuple):
+            for i in range(len(node.value) - 1, -1, -1):
+                stack.append(node.value[i])
+        else:
+            rpn.append(str(node.value))
+    return ' '.join(rpn)
+
 class _Expression:
     def __init__(self, value):
         self.value = value
@@ -16,12 +28,12 @@ class _Expression:
 
     def __str__(self):
         if isinstance(self.value, tuple):
-            return ' '.join([str(x) for x in self.value])
+            return _to_rpn(self)
         return str(self.value)
 
     def _to_rpn(self):
         if isinstance(self.value, tuple):
-            return ' '.join([x._to_rpn() for x in self.value])
+            return _to_rpn(self)
         return str(self.value)
 
 class Context:
@@ -33,6 +45,10 @@ class Context:
         self.vars.add(name)
         return _Expression(name)
     
+    def set_varorder(self, x: list):
+        for varname in x:
+            self.bdd.defvar(varname)
+
     def __str__(self):
         return str(self.vars)
     
@@ -41,6 +57,9 @@ class Context:
             arg = _Expression(arg)
         rpn = arg._to_rpn()
         return self.bdd.rpn(rpn, self.vars)
+    
+    def const(self, value):
+        return _Expression(value)
 
     def And(self, args: list):
         assert len(args) > 0
@@ -100,7 +119,7 @@ class Context:
         top = self.getbdd(arg)
         return top.prob_interval(values)
 
-    def mcs(self, arg: _Expression):
+    def mpvs(self, arg: _Expression):
         top = self.getbdd(arg)
-        return top.mcs()
+        return top.mpvs()
 

@@ -1,19 +1,20 @@
 import relibmss as ms
 
 # Create a binary decision diagram
-ft = ms.FTree()
+bss = ms.BSS()
 
 # Define variables
-A = ft.defvar('A')
-B = ft.defvar('B')
-C = ft.defvar('C')
+A = bss.defvar('A')
+B = bss.defvar('B')
+C = bss.defvar('C')
 
 # Make a tree
 top = A & B | C
 
 # Draw the BDD
-bdd = ft.getbdd(top)
+bdd = bss.getbdd(top)
 source = bdd.dot() # source is a string of the dot language
+print(source)
 
 # Example: Display the BDD in Jupyter Notebook
 from graphviz import Source

@@ -1,7 +1,7 @@
 import relibmss as ms
 
 def test_ft1():
-    ctx = ms.FTree()
+    ctx = ms.BSS()
     x = ctx.defvar("x")
     y = ctx.defvar("y")
     z = ctx.defvar("z")
@@ -20,7 +20,7 @@ def test_bdd1():
     print(v.dot())
 
 def test_ft3():
-    ctx = ms.FTree()
+    ctx = ms.BSS()
     x = ctx.defvar("x")
     y = ctx.defvar("y")
     z = ctx.defvar("z")
@@ -28,7 +28,7 @@ def test_ft3():
     print(u)
     print(ctx.getbdd(u).dot())
     print("prob:", ctx.prob(u, {"x": 0.3, "y": 0.2, "z": 0.1}))
-    m = ctx.mcs(u)
+    m = ctx.mpvs(u)
     print('mcs: ', m.extract())
 
 def test_interval4():
@@ -36,7 +36,7 @@ def test_interval4():
     print(x)
 
 def test_interval5():
-    ctx = ms.FTree()
+    ctx = ms.BSS()
     x = ctx.defvar("x")
     y = ctx.defvar("y")
     z = ctx.defvar("z")

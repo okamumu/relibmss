@@ -200,84 +200,84 @@ impl MddNode {
         self.node.dot_string()
     }
 
-    fn add(&self, other: &MddNode) -> MddNode {
+    pub fn add(&self, other: &MddNode) -> MddNode {
         let mddmgr = self.parent.upgrade().unwrap();
         let mut mdd = mddmgr.borrow_mut();
         let node = mdd.add(&self.node, &other.node);
         MddNode::new(self.parent.upgrade().unwrap(), node)
     }
 
-    fn sub(&self, other: &MddNode) -> MddNode {
+    pub fn sub(&self, other: &MddNode) -> MddNode {
         let mddmgr = self.parent.upgrade().unwrap();
         let mut mdd = mddmgr.borrow_mut();
         let node = mdd.sub(&self.node, &other.node);
         MddNode::new(self.parent.upgrade().unwrap(), node)
     }
 
-    fn mul(&self, other: &MddNode) -> MddNode {
+    pub fn mul(&self, other: &MddNode) -> MddNode {
         let mddmgr = self.parent.upgrade().unwrap();
         let mut mdd = mddmgr.borrow_mut();
         let node = mdd.mul(&self.node, &other.node);
         MddNode::new(self.parent.upgrade().unwrap(), node)
     }
 
-    fn div(&self, other: &MddNode) -> MddNode {
+    pub fn div(&self, other: &MddNode) -> MddNode {
         let mddmgr = self.parent.upgrade().unwrap();
         let mut mdd = mddmgr.borrow_mut();
         let node = mdd.div(&self.node, &other.node);
         MddNode::new(self.parent.upgrade().unwrap(), node)
     }
 
-    fn eq(&self, other: &MddNode) -> MddNode {
+    pub fn eq(&self, other: &MddNode) -> MddNode {
         let mddmgr = self.parent.upgrade().unwrap();
         let mut mdd = mddmgr.borrow_mut();
         let node = mdd.eq(&self.node, &other.node);
         MddNode::new(self.parent.upgrade().unwrap(), node)
     }
 
-    fn ne(&self, other: &MddNode) -> MddNode {
+    pub fn ne(&self, other: &MddNode) -> MddNode {
         let mddmgr = self.parent.upgrade().unwrap();
         let mut mdd = mddmgr.borrow_mut();
         let node = mdd.neq(&self.node, &other.node);
         MddNode::new(self.parent.upgrade().unwrap(), node)
     }
 
-    fn lt(&self, other: &MddNode) -> MddNode {
+    pub fn lt(&self, other: &MddNode) -> MddNode {
         let mddmgr = self.parent.upgrade().unwrap();
         let mut mdd = mddmgr.borrow_mut();
         let node = mdd.lt(&self.node, &other.node);
         MddNode::new(self.parent.upgrade().unwrap(), node)
     }
 
-    fn le(&self, other: &MddNode) -> MddNode {
+    pub fn le(&self, other: &MddNode) -> MddNode {
         let mddmgr = self.parent.upgrade().unwrap();
         let mut mdd = mddmgr.borrow_mut();
         let node = mdd.lte(&self.node, &other.node);
         MddNode::new(self.parent.upgrade().unwrap(), node)
     }
 
-    fn gt(&self, other: &MddNode) -> MddNode {
+    pub fn gt(&self, other: &MddNode) -> MddNode {
         let mddmgr = self.parent.upgrade().unwrap();
         let mut mdd = mddmgr.borrow_mut();
         let node = mdd.gt(&self.node, &other.node);
         MddNode::new(self.parent.upgrade().unwrap(), node)
     }
 
-    fn ge(&self, other: &MddNode) -> MddNode {
+    pub fn ge(&self, other: &MddNode) -> MddNode {
         let mddmgr = self.parent.upgrade().unwrap();
         let mut mdd = mddmgr.borrow_mut();
         let node = mdd.gte(&self.node, &other.node);
         MddNode::new(self.parent.upgrade().unwrap(), node)
     }
 
-    fn value(&self, other: i64) -> MddNode {
+    pub fn value(&self, other: i64) -> MddNode {
         let mddmgr = self.parent.upgrade().unwrap();
         let mut mdd = mddmgr.borrow_mut();
         let node = mdd.value(other);
         MddNode::new(self.parent.upgrade().unwrap(), node)
     }
 
-    fn boolean(&self, other: bool) -> MddNode {
+    pub fn boolean(&self, other: bool) -> MddNode {
         if other {
             let mddmgr = self.parent.upgrade().unwrap();
             let mdd = mddmgr.borrow();
@@ -291,26 +291,26 @@ impl MddNode {
         }
     }
 
-    fn prob(&mut self, pv: HashMap<String, Vec<f64>>) -> HashMap<i64, f64> {
+    pub fn prob(&mut self, pv: HashMap<String, Vec<f64>>) -> HashMap<i64, f64> {
         let mgr = self.parent.upgrade().unwrap();
         let mut mdd = mgr.borrow_mut();
         mdd_algo::mddprob(&mut mdd, &self.node, pv)
     }
 
-    fn prob_interval(&mut self, pv: HashMap<String, Vec<Interval>>) -> HashMap<i64, Interval> {
+    pub fn prob_interval(&mut self, pv: HashMap<String, Vec<Interval>>) -> HashMap<i64, Interval> {
         let mgr = self.parent.upgrade().unwrap();
         let mut mdd = mgr.borrow_mut();
         mdd_algo::mddprob(&mut mdd, &self.node, pv)
     }
 
-    fn mvs(&mut self) -> MddNode {
+    pub fn mpvs(&mut self) -> MddNode {
         let mgr = self.parent.upgrade().unwrap();
         let mut mdd = mgr.borrow_mut();
         let node = mdd_algo::mddminsol(&mut mdd, &self.node);
         MddNode::new(self.parent.upgrade().unwrap(), node)
     }
 
-    pub fn count(&self) -> (usize, u64) {
+    pub fn size(&self) -> (usize, u64) {
         match &self.node {
             mtmdd2::MtMdd2Node::Value(x) => {
                 x.count()

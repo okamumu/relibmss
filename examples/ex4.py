@@ -3,8 +3,8 @@
 
 import relibmss as ms
 
-ft = ms.FTree()
-c = [ft.defvar("c" + str(i)) for i in range(61)]
+bss = ms.BSS()
+c = [bss.defvar("c" + str(i)) for i in range(61)]
 
 g62 = c[0] & c[1]
 g63 = c[0] & c[2]
@@ -50,13 +50,13 @@ g102 = g66 | c[41]
 g103 = g68 | c[42]
 g104 = g67 | c[43]
 g105 = g69 | c[44]
-g106 = ft.kofn(3, [g70, g71, g72, g73])
-g107 = ft.kofn(3, [g74, g75, g76, g77])
-g108 = ft.kofn(3, [g78, g79, g80, g81])
-g109 = ft.kofn(3, [g82, g83, g84, g85])
-g110 = ft.kofn(3, [g86, g87, g88, g89])
-g111 = ft.kofn(3, [g94, g95, g96, g97])
-g112 = ft.kofn(3, [g98, g99, g100, g101])
+g106 = bss.kofn(3, [g70, g71, g72, g73])
+g107 = bss.kofn(3, [g74, g75, g76, g77])
+g108 = bss.kofn(3, [g78, g79, g80, g81])
+g109 = bss.kofn(3, [g82, g83, g84, g85])
+g110 = bss.kofn(3, [g86, g87, g88, g89])
+g111 = bss.kofn(3, [g94, g95, g96, g97])
+g112 = bss.kofn(3, [g98, g99, g100, g101])
 g113 = g90 & g92
 g114 = g91 & g93
 g115 = g102 & g104
@@ -69,7 +69,7 @@ g121 = g66 | g117 | c[47]
 g122 = g68 | g118 | c[48]
 g123 = g67 | g117 | c[49]
 g124 = g69 | g118 | c[50]
-g125 = ft.kofn(2, [g121, g123, g122, g124])
+g125 = bss.kofn(2, [g121, g123, g122, g124])
 g126 = g111 | g112 | g125 | c[52]
 g127 = g115 & g120
 g128 = g116 & g120
@@ -81,7 +81,7 @@ g133 = g62 | g129 | c[57]
 g134 = g63 | g130 | c[58]
 g135 = g64 | g131 | c[59]
 g136 = g65 | g132 | c[60]
-g137 = ft.kofn(3, [g133, g134, g135, g136])
+g137 = bss.kofn(3, [g133, g134, g135, g136])
 g138 = g106 | g119 | g137
 g139 = g62 | g66 | g117 | g129 | c[47]
 g140 = g63 | g68 | g118 | g130 | c[48]
@@ -91,8 +91,8 @@ g143 = g139 & g140 & g141 & g142
 g144 = g111 | g112 | g143 | c[52]
 top = g126 & g138 & g144
 
-bdd = ft.getbdd(top)
-print(bdd.count()) # The numbers of nodes and edges in the BDD
+bdd = bss.getbdd(top)
+print(bdd.size()) # The numbers of nodes and edges in the BDD
 
-mcs = bdd.mcs() # Obtain the minimal cut sets from the BDD directly
-print(mcs.extract())
+s = bdd.mpvs() # Obtain the minimal path vectors (minimal cut sets) from the BDD directly
+print('The number of minimal path sets:', s.count_set())

@@ -1,3 +1,7 @@
+# v0.5.0
+
+- Change interface
+
 # v0.4.4
 
 - add aarch64 support

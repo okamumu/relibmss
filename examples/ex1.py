@@ -1,12 +1,12 @@
 import relibmss as ms
 
-# Create a fault tree (binary system)
-ft = ms.FTree()
+# Create a binary system (fault tree)
+bss = ms.BSS()
 
 # Define events (This version only supports repeated events)
-A = ft.defvar('A')
-B = ft.defvar('B')
-C = ft.defvar('C')
+A = bss.defvar('A')
+B = bss.defvar('B')
+C = bss.defvar('C')
 
 # Make a tree
 top = A & B | C # & is AND gate, | is OR gate
@@ -19,7 +19,7 @@ prob = {
 }
 
 # Calculate the probability
-print(ft.prob(top, prob))
+print(bss.prob(top, prob))
 
 # Set the interval of the probability
 prob = {
@@ -29,4 +29,4 @@ prob = {
 }
 
 # Calculate the probability
-print(ft.prob_interval(top, prob))
+print(bss.prob_interval(top, prob))

@@ -142,27 +142,6 @@ impl BddMgr {
         }
     }
 
-    // pub fn and(&self, nodes: Vec<BddNode>) -> BddNode {
-    //     let mut bdd = self.bdd.borrow_mut();
-    //     let bnodes = nodes.iter().map(|n| n.node()).collect::<Vec<_>>();
-    //     let result = ft::_and(&mut bdd, bnodes);
-    //     BddNode::new(self.bdd.clone(), result)
-    // }
-
-    // pub fn or(&self, nodes: Vec<BddNode>) -> BddNode {
-    //     let mut bdd = self.bdd.borrow_mut();
-    //     let bnodes = nodes.iter().map(|n| n.node()).collect::<Vec<_>>();
-    //     let result = ft::_or(&mut bdd, bnodes);
-    //     BddNode::new(self.bdd.clone(), result)
-    // }
-
-    // pub fn kofn(&self, k: usize, nodes: Vec<BddNode>) -> BddNode {
-    //     let mut bdd = self.bdd.borrow_mut();
-    //     let bnodes = nodes.iter().map(|n| n.node()).collect::<Vec<_>>();
-    //     let result = ft::kofn(&mut bdd, k, bnodes);
-    //     BddNode::new(self.bdd.clone(), result)
-    // }
-
     pub fn ifelse(&self, cond: &BddNode, then: &BddNode, else_: &BddNode) -> BddNode {
         let bdd = self.bdd.clone();
         BddNode::new(
@@ -234,7 +213,8 @@ impl BddNode {
         bdd_algo::prob(&mut bdd.clone().borrow_mut(), &self.node, &pv, &mut cache)
     }
 
-    pub fn mcs(&self) -> BddNode {
+    // obtain minimal path vectors (mpvs) of monotone BDD
+    pub fn mpvs(&self) -> BddNode {
         let bdd = self.parent.upgrade().unwrap();
         let mut cache1 = HashMap::new();
         let mut cache2 = HashMap::new();
@@ -254,7 +234,12 @@ impl BddNode {
         pathset
     }
 
-    pub fn count(&self) -> (usize, u64) {
+    pub fn size(&self) -> (usize, u64) {
         self.node.count()
+    }
+
+    pub fn count_set(&self) -> u64 {
+        let mut cache = HashMap::new();
+        bdd_algo::count_set(&self.node, &mut cache)
     }
 }

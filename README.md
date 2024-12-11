@@ -15,13 +15,13 @@ pip install relibmss
 ```python
 import relibmss as ms
 
-# Create a fault tree (binary system)
-ft = ms.FTree()
+# Create a binary system (fault tree)
+bss = ms.BSS()
 
 # Define events (This version only supports repeated events)
-A = ft.defvar('A')
-B = ft.defvar('B')
-C = ft.defvar('C')
+A = bss.defvar('A')
+B = bss.defvar('B')
+C = bss.defvar('C')
 
 # Make a tree
 top = A & B | C # & is AND gate, | is OR gate
@@ -34,7 +34,7 @@ prob = {
 }
 
 # Calculate the probability
-print(ft.prob(top, prob))
+print(bss.prob(top, prob))
 
 # Set the interval of the probability
 prob = {
@@ -44,7 +44,7 @@ prob = {
 }
 
 # Calculate the probability
-print(ft.prob_interval(top, prob))
+print(bss.prob_interval(top, prob))
 ```
 
 ### Obtain the minimal cut sets
@@ -52,19 +52,19 @@ print(ft.prob_interval(top, prob))
 ```python
 import relibmss as ms
 
-# Create a fault tree (binary system)
-ft = ms.FTree()
+# Create a binary system
+bss = ms.BSS()
 
 # Define events (This version only supports repeated events)
-A = ft.defvar('A')
-B = ft.defvar('B')
-C = ft.defvar('C')
+A = bss.defvar('A')
+B = bss.defvar('B')
+C = bss.defvar('C')
 
-# Make a tree
-top = ft.kofn(2, [A, B, C]) # k-of-n gate
+# Make a system
+top = bss.kofn(2, [A, B, C]) # k-of-n gate
 
-# Obtain the minimal cut sets
-s = ft.mcs(top) # s is a set of minimal cut sets (ZDD representation)
+# Obtain the minimal path vectors
+s = bss.mpvs(top) # s is a set of minimal path vectors (ZDD representation)
 
 # Convert the ZDD representation to a list of sets
 print(s.extract())
@@ -76,19 +76,20 @@ print(s.extract())
 import relibmss as ms
 
 # Create a binary decision diagram
-ft = ms.FTree()
+bss = ms.BSS()
 
 # Define variables
-A = ft.defvar('A')
-B = ft.defvar('B')
-C = ft.defvar('C')
+A = bss.defvar('A')
+B = bss.defvar('B')
+C = bss.defvar('C')
 
 # Make a tree
 top = A & B | C
 
 # Draw the BDD
-bdd = ft.getbdd(top)
+bdd = bss.getbdd(top)
 source = bdd.dot() # source is a string of the dot language
+print(source)
 
 # Example: Display the BDD in Jupyter Notebook
 from graphviz import Source
@@ -104,8 +105,8 @@ Image(Source(source).pipe(format='png'))
 
 import relibmss as ms
 
-ft = ms.FTree()
-c = [ft.defvar("c" + str(i)) for i in range(61)]
+bss = ms.BSS()
+c = [bss.defvar("c" + str(i)) for i in range(61)]
 
 g62 = c[0] & c[1]
 g63 = c[0] & c[2]
@@ -151,13 +152,13 @@ g102 = g66 | c[41]
 g103 = g68 | c[42]
 g104 = g67 | c[43]
 g105 = g69 | c[44]
-g106 = ft.kofn(3, [g70, g71, g72, g73])
-g107 = ft.kofn(3, [g74, g75, g76, g77])
-g108 = ft.kofn(3, [g78, g79, g80, g81])
-g109 = ft.kofn(3, [g82, g83, g84, g85])
-g110 = ft.kofn(3, [g86, g87, g88, g89])
-g111 = ft.kofn(3, [g94, g95, g96, g97])
-g112 = ft.kofn(3, [g98, g99, g100, g101])
+g106 = bss.kofn(3, [g70, g71, g72, g73])
+g107 = bss.kofn(3, [g74, g75, g76, g77])
+g108 = bss.kofn(3, [g78, g79, g80, g81])
+g109 = bss.kofn(3, [g82, g83, g84, g85])
+g110 = bss.kofn(3, [g86, g87, g88, g89])
+g111 = bss.kofn(3, [g94, g95, g96, g97])
+g112 = bss.kofn(3, [g98, g99, g100, g101])
 g113 = g90 & g92
 g114 = g91 & g93
 g115 = g102 & g104
@@ -170,7 +171,7 @@ g121 = g66 | g117 | c[47]
 g122 = g68 | g118 | c[48]
 g123 = g67 | g117 | c[49]
 g124 = g69 | g118 | c[50]
-g125 = ft.kofn(2, [g121, g123, g122, g124])
+g125 = bss.kofn(2, [g121, g123, g122, g124])
 g126 = g111 | g112 | g125 | c[52]
 g127 = g115 & g120
 g128 = g116 & g120
@@ -182,7 +183,7 @@ g133 = g62 | g129 | c[57]
 g134 = g63 | g130 | c[58]
 g135 = g64 | g131 | c[59]
 g136 = g65 | g132 | c[60]
-g137 = ft.kofn(3, [g133, g134, g135, g136])
+g137 = bss.kofn(3, [g133, g134, g135, g136])
 g138 = g106 | g119 | g137
 g139 = g62 | g66 | g117 | g129 | c[47]
 g140 = g63 | g68 | g118 | g130 | c[48]
@@ -192,149 +193,11 @@ g143 = g139 & g140 & g141 & g142
 g144 = g111 | g112 | g143 | c[52]
 top = g126 & g138 & g144
 
-bdd = ft.getbdd(top)
-print(bdd.count()) # The numbers of nodes and edges in the BDD
+bdd = bss.getbdd(top)
+print(bdd.size()) # The numbers of nodes and edges in the BDD
 
-mcs = bdd.mcs() # Obtain the minimal cut sets from the BDD directly
-print(mcs.extract())
-
-prob = {
-    'c0': 0.01,
-    'c1': 0.051,
-    'c2': 0.051,
-    'c3': 0.051,
-    'c4': 0.051,
-    'c5': 0.112,
-    'c6': 0.112,
-    'c7': 0.112,
-    'c8': 0.112,
-    'c9': 0.016,
-    'c10': 0.016,
-    'c11': 0.016,
-    'c12': 0.016,
-    'c13': 0.0218,
-    'c14': 0.0218,
-    'c15': 0.0218,
-    'c16': 0.0218,
-    'c17': 0.015,
-    'c18': 0.015,
-    'c19': 0.015,
-    'c20': 0.015,
-    'c21': 0.016,
-    'c22': 0.016,
-    'c23': 0.016,
-    'c24': 0.016,
-    'c25': 0.015,
-    'c26': 0.015,
-    'c27': 0.015,
-    'c28': 0.015,
-    'c29': 0.0137,
-    'c30': 0.0137,
-    'c31': 0.0137,
-    'c32': 0.0137,
-    'c33': 0.016,
-    'c34': 0.016,
-    'c35': 0.016,
-    'c36': 0.016,
-    'c37': 0.016,
-    'c38': 0.016,
-    'c39': 0.016,
-    'c40': 0.016,
-    'c41': 0.0038,
-    'c42': 0.0038,
-    'c43': 0.0117,
-    'c44': 0.0117,
-    'c45': 0.00052,
-    'c46': 0.00052,
-    'c47': 0.018,
-    'c48': 0.018,
-    'c49': 0.018,
-    'c50': 0.018,
-    'c51': 0.000008,
-    'c52': 0.000072,
-    'c53': 0.015,
-    'c54': 0.015,
-    'c55': 0.015,
-    'c56': 0.015,
-    'c57': 0.0188,
-    'c58': 0.0188,
-    'c59': 0.0188,
-    'c60': 0.0188
-}
-
-ft.prob(top, prob)
-
-# Set the interval of the probability
-error_lower = 0.5
-error_upper = 1.5
-
-prob = {
-    'c0': (0.01 * error_lower, 0.01 * error_upper),
-    'c1': (0.051 * error_lower, 0.051 * error_upper),
-    'c2': (0.051 * error_lower, 0.051 * error_upper),
-    'c3': (0.051 * error_lower, 0.051 * error_upper),
-    'c4': (0.051 * error_lower, 0.051 * error_upper),
-    'c5': (0.112 * error_lower, 0.112 * error_upper),
-    'c6': (0.112 * error_lower, 0.112 * error_upper),
-    'c7': (0.112 * error_lower, 0.112 * error_upper),
-    'c8': (0.112 * error_lower, 0.112 * error_upper),
-    'c9': (0.016 * error_lower, 0.016 * error_upper),
-    'c10': (0.016 * error_lower, 0.016 * error_upper),
-    'c11': (0.016 * error_lower, 0.016 * error_upper),
-    'c12': (0.016 * error_lower, 0.016 * error_upper),
-    'c13': (0.0218 * error_lower, 0.0218 * error_upper),
-    'c14': (0.0218 * error_lower, 0.0218 * error_upper),
-    'c15': (0.0218 * error_lower, 0.0218 * error_upper),
-    'c16': (0.0218 * error_lower, 0.0218 * error_upper),
-    'c17': (0.015 * error_lower, 0.015 * error_upper),
-    'c18': (0.015 * error_lower, 0.015 * error_upper),
-    'c19': (0.015 * error_lower, 0.015 * error_upper),
-    'c20': (0.015 * error_lower, 0.015 * error_upper),
-    'c21': (0.016 * error_lower, 0.016 * error_upper),
-    'c22': (0.016 * error_lower, 0.016 * error_upper),
-    'c23': (0.016 * error_lower, 0.016 * error_upper),
-    'c24': (0.016 * error_lower, 0.016 * error_upper),
-    'c25': (0.015 * error_lower, 0.015 * error_upper),
-    'c26': (0.015 * error_lower, 0.015 * error_upper),
-    'c27': (0.015 * error_lower, 0.015 * error_upper),
-    'c28': (0.015 * error_lower, 0.015 * error_upper),
-    'c29': (0.0137 * error_lower, 0.0137 * error_upper),
-    'c30': (0.0137 * error_lower, 0.0137 * error_upper),
-    'c31': (0.0137 * error_lower, 0.0137 * error_upper),
-    'c32': (0.0137 * error_lower, 0.0137 * error_upper),
-    'c33': (0.016 * error_lower, 0.016 * error_upper),
-    'c34': (0.016 * error_lower, 0.016 * error_upper),
-    'c35': (0.016 * error_lower, 0.016 * error_upper),
-    'c36': (0.016 * error_lower, 0.016 * error_upper),
-    'c37': (0.016 * error_lower, 0.016 * error_upper),
-    'c38': (0.016 * error_lower, 0.016 * error_upper),
-    'c39': (0.016 * error_lower, 0.016 * error_upper),
-    'c40': (0.016 * error_lower, 0.016 * error_upper),
-    'c41': (0.0038 * error_lower, 0.0038 * error_upper),
-    'c42': (0.0038 * error_lower, 0.0038 * error_upper),
-    'c43': (0.0117 * error_lower, 0.0117 * error_upper),
-    'c44': (0.0117 * error_lower, 0.0117 * error_upper),
-    'c45': (0.00052 * error_lower, 0.00052 * error_upper),
-    'c46': (0.00052 * error_lower, 0.00052 * error_upper),
-    'c47': (0.018 * error_lower, 0.018 * error_upper),
-    'c48': (0.018 * error_lower, 0.018 * error_upper),
-    'c49': (0.018 * error_lower, 0.018 * error_upper),
-    'c50': (0.018 * error_lower, 0.018 * error_upper),
-    'c51': (0.000008 * error_lower, 0.000008 * error_upper),
-    'c52': (0.000072 * error_lower, 0.000072 * error_upper),
-    'c53': (0.015 * error_lower, 0.015 * error_upper),
-    'c54': (0.015 * error_lower, 0.015 * error_upper),
-    'c55': (0.015 * error_lower, 0.015 * error_upper),
-    'c56': (0.015 * error_lower, 0.015 * error_upper),
-    'c57': (0.0188 * error_lower, 0.0188 * error_upper),
-    'c58': (0.0188 * error_lower, 0.0188 * error_upper),
-    'c59': (0.0188 * error_lower, 0.0188 * error_upper),
-    'c60': (0.0188 * error_lower, 0.0188 * error_upper)
-}
-
-result = ft.prob_interval(top, prob)
-print('lower: ', result.lower)
-print('upper: ', result.upper)
+s = bdd.mpvs() # Obtain the minimal path vectors (minimal cut sets) from the BDD directly
+print('The number of minimal path sets:', s.count_set())
 ```
 
 ### TODO for fault tree analysis
@@ -485,7 +348,7 @@ C = mss.defvar('C', 3)
 sx = gate1(mss, B, C)
 ss = gate2(mss, A, sx)
 
-mdd = mss.mvs(ss)
+mdd = mss.mpvs(ss)
 print(mdd.dot())
 ```
 

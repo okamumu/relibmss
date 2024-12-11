@@ -65,6 +65,9 @@ class _Expression:
     
     def dot(self):
         return self.node.dot()
+    
+    # def size(self):
+    #     return self.node.size()
 
 class MDD:
     def __init__(self):
@@ -82,6 +85,17 @@ class MDD:
             else:
                 return _Expression(self.mddmgr.zero())
         return x
+    
+    def const(self, x):
+        if isinstance(x, int):
+            return _Expression(self.mddmgr.val(x))
+        elif isinstance(x, bool):
+            if x:
+                return _Expression(self.mddmgr.one())
+            else:
+                return _Expression(self.mddmgr.zero())
+        else:
+            raise ValueError("The value for const should be int or bool")
     
     def And(self, args):
         exprs = [self._to_expr(arg) for arg in args]

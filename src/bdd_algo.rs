@@ -1,10 +1,11 @@
 // mod ft
 
 use std::collections::HashMap;
-use std::ops::{Add, Mul, Sub};
+use std::ops::{Add, Mul, MulAssign, Sub};
+use std::result;
 
 use dd::bdd;
-use dd::common::NodeId;
+use dd::common::{Level, NodeId};
 use dd::nodes::NonTerminal;
 
 pub fn prob<T>(
@@ -21,14 +22,14 @@ where
         Some(x) => x.clone(),
         None => {
             let result = match node {
-                bdd::BddNode::Zero => T::from(1.0),
-                bdd::BddNode::One => T::from(0.0),
+                bdd::BddNode::Zero => T::from(0.0),
+                bdd::BddNode::One => T::from(1.0),
                 bdd::BddNode::NonTerminal(fnode) => {
                     let x = fnode.header().label();
                     let fp = *pv.get(x).unwrap_or(&T::from(0.0));
                     let low = prob(bdd, &fnode[0], pv, cache);
                     let high = prob(bdd, &fnode[1], pv, cache);
-                    fp * low + (T::from(1.0) - fp) * high
+                    (T::from(1.0) - fp) * low + fp * high
                 }
             };
             cache.insert(key, result);
@@ -77,7 +78,6 @@ pub fn bdd_without(
                 (bdd::BddNode::Zero, _) => dd.zero(),
                 (_, bdd::BddNode::Zero) => f.clone(),
                 (_, bdd::BddNode::One) => dd.zero(),
-                (bdd::BddNode::One, bdd::BddNode::Zero) => dd.one(),
                 (bdd::BddNode::One, bdd::BddNode::NonTerminal(gnode)) => {
                     let low = bdd_without(dd, f, &gnode[0], cache);
                     let high = bdd_without(dd, f, &gnode[1], cache);
@@ -108,6 +108,27 @@ pub fn bdd_without(
             };
             cache.insert(key, node.clone());
             node
+        }
+    }
+}
+
+pub fn count_set<T>(node: &bdd::BddNode, cache: &mut HashMap<NodeId, T>) -> T
+where
+    T: Add<Output = T> + Clone + From<u32>,
+{
+    let key = node.id();
+    match cache.get(&key) {
+        Some(x) => x.clone(),
+        None => {
+            let result = match node {
+                bdd::BddNode::One => T::from(1),
+                bdd::BddNode::Zero => T::from(0),
+                bdd::BddNode::NonTerminal(fnode) => {
+                    count_set(&fnode[0], cache) + count_set(&fnode[1], cache)
+                }
+            };
+            cache.insert(key, result.clone());
+            result
         }
     }
 }
