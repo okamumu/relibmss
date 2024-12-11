@@ -1,3 +1,7 @@
+# v0.5.1
+
+- Python 3.10 support
+
 # v0.5.0
 
 - Change interface
