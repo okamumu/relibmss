@@ -312,15 +312,9 @@ impl MddNode {
 
     pub fn size(&self) -> (usize, u64) {
         match &self.node {
-            mtmdd2::MtMdd2Node::Value(x) => {
-                x.count()
-            },
-            mtmdd2::MtMdd2Node::Bool(x) => {
-                x.count()
-            },
-            mtmdd2::MtMdd2Node::Undet => {
-                (0, 0)
-            },
+            mtmdd2::MtMdd2Node::Value(x) => x.count(),
+            mtmdd2::MtMdd2Node::Bool(x) => x.count(),
+            mtmdd2::MtMdd2Node::Undet => (0, 0),
         }
     }
 }

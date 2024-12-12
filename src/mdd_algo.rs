@@ -4,10 +4,10 @@ use std::collections::HashMap;
 use std::ops::{Add, Mul, Sub};
 
 use dd::common::NodeId;
-use dd::{mdd, mtmdd};
 use dd::mtmdd2;
 use dd::nodes::NonTerminal;
 use dd::nodes::Terminal;
+use dd::{mdd, mtmdd};
 
 pub fn mddprob<T>(
     mdd: &mut mtmdd2::MtMdd2<i64>,
@@ -21,11 +21,11 @@ where
         mtmdd2::MtMdd2Node::Value(fnode) => {
             let mut cache = HashMap::new();
             vmddprob(&mut mdd.mtmdd_mut(), &fnode, &pv, &mut cache)
-        },
+        }
         mtmdd2::MtMdd2Node::Bool(fnode) => {
             let mut cache = HashMap::new();
             bmddprob(&mut mdd.mdd_mut(), &fnode, &pv, &mut cache)
-        },
+        }
         _ => panic!("The node should be either Value or Bool"),
     }
 }
@@ -92,13 +92,13 @@ where
                     let value = 0;
                     map.insert(value, T::from(1.0));
                     map
-                },
+                }
                 mdd::MddNode::One => {
                     let mut map = HashMap::new();
                     let value = 1;
                     map.insert(value, T::from(1.0));
                     map
-                },
+                }
                 mdd::MddNode::NonTerminal(fnode) => {
                     let label = fnode.header().label();
                     let fp = pv.get(label).unwrap();
@@ -113,7 +113,7 @@ where
                         }
                     }
                     map
-                },
+                }
                 mdd::MddNode::Undet => HashMap::new(),
             };
             cache.insert(key, result.clone());

@@ -41,8 +41,8 @@ for x in result:
 bdd = bss.getbdd(expr)
 print(bdd.size())
 
-# mpvs = bdd.mpvs()
-# print(mpvs.count_set())
+mpvs = bdd.mpvs()
+print(mpvs.count_set())
 
 prob = {'p'+str(i): 0.9 for i in range(m)}
 
