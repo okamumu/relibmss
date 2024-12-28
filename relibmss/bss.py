@@ -114,12 +114,22 @@ class Context:
         top = self.getbdd(arg)
         return top.prob(values)
     
+    def bmeas(self, arg: _Expression, values: dict):
+        top = self.getbdd(arg)
+        return top.bmeas(values)
+
     def prob_interval(self, arg: _Expression, values: dict):
         values = {k: ms.Interval(v[0], v[1]) for k, v in values.items()}
         top = self.getbdd(arg)
         return top.prob_interval(values)
 
+    def bmeas_interval(self, arg: _Expression, values: dict):
+        values = {k: ms.Interval(v[0], v[1]) for k, v in values.items()}
+        top = self.getbdd(arg)
+        return top.bmeas_interval(values)
+
     def mpvs(self, arg: _Expression):
         top = self.getbdd(arg)
         return top.mpvs()
+    
 

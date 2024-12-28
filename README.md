@@ -200,6 +200,58 @@ s = bdd.mpvs() # Obtain the minimal path vectors (minimal cut sets) from the BDD
 print('The number of minimal path sets:', s.count_set())
 ```
 
+### Importance analysis
+
+Compute the Birnbaum importance for each event as the first order derivative of the top event probability with respect to the probability of the event. This is the Birnbaum importance in the case where event occurrences are independent.
+
+```python
+import relibmss as ms
+
+# Create a binary system (fault tree)
+bss = ms.BSS()
+
+# Define events (This version only supports repeated events)
+A = bss.defvar('A')
+B = bss.defvar('B')
+C = bss.defvar('C')
+
+# Make a tree
+top = A & B | C # & is AND gate, | is OR gate
+
+# Set probabilities
+prob = {
+    'A': 0.1,
+    'B': 0.2,
+    'C': 0.3
+}
+
+# top = 1-(1-pa*pb)*(1-pc) = pa*pb+pc-pa*pb*pc
+# top / pa = pb - pb*pc = 0.2 - 0.2*0.3 = 0.14
+# top / pb = pa - pa*pc = 0.1 - 0.1*0.3 = 0.07
+# top / pc = 1 - pa*pb = 1 - 0.1*0.2 = 0.98
+
+print(bss.bmeas(top, prob))
+
+# Set the interval of the probability
+prob = {
+    'A': (0.1, 0.2),
+    'B': (0.2, 0.3),
+    'C': (0.3, 0.4)
+}
+
+print(bss.bmeas_interval(top, prob))
+
+### Structure importance measure can be calculated as follows
+
+prob = {
+    'A': 0.5,
+    'B': 0.5,
+    'C': 0.5
+}
+
+print(bss.bmeas(top, prob))
+```
+
 ### TODO for fault tree analysis
 
 - FTA with MCS

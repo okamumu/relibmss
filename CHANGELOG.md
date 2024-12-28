@@ -1,3 +1,7 @@
+# v0.5.2
+
+- Add b-measure for BDD
+
 # v0.5.1
 
 - Python 3.10 support

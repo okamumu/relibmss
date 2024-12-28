@@ -1,6 +1,6 @@
 // mod ft
 
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 use std::ops::{Add, Mul, MulAssign, Sub};
 use std::result;
 
@@ -285,3 +285,169 @@ pub fn extract(node: &bdd::BddNode, path: &mut Vec<String>, pathset: &mut Vec<Ve
         }
     }
 }
+
+/*
+function grad(ft::FTree, f::BDD.AbstractNode; env::Dict{Symbol,Tv} = getenv(ft), bddcache = Dict()) where Tv <: Number
+    _prob(Val(:CDF), Val(:F), ft, f, env, bddcache)
+    gradcache = Dict{BDD.NodeID,Tv}()
+    gradevent = Dict{Symbol,Tv}()
+    gradcache[BDD.id(f)] = Tv(1)
+    for x = _tsort(f)
+        _grad(Val(:CDF), Val(:F), ft, x, env, bddcache, gradcache, gradevent)
+    end
+    gradevent
+end
+
+function _grad(::Tc, ::Val{:F}, ft::FTree,
+    f::BDD.AbstractNonTerminalNode, env::Dict{Symbol,Tv},
+    bddcache, gradcache, gradevent) where {Tc, Tv <: Number}
+    w = gradcache[BDD.id(f)]
+    v = geteventsymbol(ft, f)
+    p = env[v]
+    barp = Tv(1)-p
+
+    b0 = BDD.get_zero(f)
+    tmp = get!(gradcache, BDD.id(b0), Tv(0))
+    gradcache[BDD.id(b0)] = tmp + w * barp
+
+    b1 = BDD.get_one(f)
+    tmp = get!(gradcache, BDD.id(b1), Tv(0))
+    gradcache[BDD.id(b1)] = tmp + w * p
+
+    tmp = get!(gradevent, v, Tv(0))
+    gradevent[v] = tmp + w * (bddcache[BDD.id(b1)] - bddcache[BDD.id(b0)])
+    nothing
+end
+
+function _grad(::Val{:CDF}, ::Val{:F}, ft::FTree,
+    f::BDD.AbstractTerminalNode, env::Dict{Symbol,Tv},
+    bddcache, gradcache, gradevent) where {Tv <: Number}
+    nothing
+end
+
+function _grad(::Val{:CCDF}, ::Val{:F}, ft::FTree,
+    f::BDD.AbstractTerminalNode, env::Dict{Symbol,Tv},
+    bddcache, gradcache, gradevent) where {Tv <: Number}
+    nothing
+end
+
+*/
+
+pub fn bmeas<T>(
+    bdd: &mut bdd::Bdd,
+    node: &bdd::BddNode,
+    env: &HashMap<String, T>,
+) -> HashMap<String, T>
+where
+    T: Add<Output = T> + Sub<Output = T> + Mul<Output = T> + Clone + Copy + PartialEq + From<f64>,
+{
+    let sorted_nodes = topological_sort(&node);
+    let mut gradcache = HashMap::new();
+    let mut bddcache = HashMap::new();
+    let mut gradevent = HashMap::new();
+    gradcache.insert(node.id(), T::from(1.0));
+    for f in sorted_nodes {
+        match f {
+            bdd::BddNode::Zero | bdd::BddNode::One => (),
+            bdd::BddNode::NonTerminal(fnode) => {
+                let w = *gradcache.get(&fnode.id()).unwrap_or(&T::from(0.0));
+                let x = fnode.header().label();
+                let p = *env.get(x).unwrap_or(&T::from(0.0));
+                let barp = T::from(1.0) - p;
+                let result0 = if let Some(&val) = gradcache.get(&fnode[0].id()) {
+                    val + w * barp
+                } else {
+                    w * barp
+                };
+                gradcache.insert(fnode[0].id(), result0);
+                let result1 = if let Some(&val) = gradcache.get(&fnode[1].id()) {
+                    val + w * p
+                } else {
+                    w * p
+                };
+                gradcache.insert(fnode[1].id(), result1);
+                let p0 = prob(bdd, &fnode[0], env, &mut bddcache);
+                let p1 = prob(bdd, &fnode[1], env, &mut bddcache);
+                let resultv = if let Some(&val) = gradevent.get(x) {
+                    val + w * (p1 - p0)
+                } else {
+                    w * (p1 - p0)
+                };
+                gradevent.insert(x.to_string(), resultv);
+            }
+        }
+    }
+    gradevent
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum CheckedState {
+    Persistent,
+    Temporary,
+}
+
+pub fn topological_sort(f: &bdd::BddNode) -> Vec<bdd::BddNode> {
+    let mut result = Vec::new();
+    let mut check = HashMap::new();
+    let mut queue = VecDeque::new();
+    queue.push_back(f.clone());
+    while let Some(node) = queue.pop_front() {
+        match check.get(&node.id()) {
+            Some(&CheckedState::Temporary) => panic!("DAG has a closed path"),
+            Some(&CheckedState::Persistent) => (),
+            None => {
+                visit(&node, &mut check, &mut result, &mut queue);
+            }
+        }
+    }
+    result.reverse();
+    result
+}
+
+fn visit(
+    x: &bdd::BddNode,
+    check: &mut HashMap<NodeId, CheckedState>,
+    result: &mut Vec<bdd::BddNode>,
+    queue: &mut VecDeque<bdd::BddNode>,
+) {
+    match check.get(&x.id()) {
+        Some(&CheckedState::Temporary) => panic!("DAG has a closed path"),
+        Some(&CheckedState::Persistent) => (),
+        None => {
+            check.insert(x.id(), CheckedState::Temporary);
+            match x {
+                bdd::BddNode::Zero | bdd::BddNode::One => (),
+                bdd::BddNode::NonTerminal(fnode) => {
+                    for m in fnode.iter() {
+                        queue.push_back(m.clone());
+                        visit(&m, check, result, queue);
+                    }
+                }
+            }
+            check.insert(x.id(), CheckedState::Persistent);
+            result.push(x.clone());
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashSet;
+
+    use super::*;
+
+    #[test]
+    fn test_topological_sort() {
+        let mut dd = crate::bdd::BddMgr::new();
+        let x = dd.defvar("x");
+        let y = dd.defvar("y");
+        let z = dd.defvar("z");
+        let set = HashSet::new();
+        let f = dd.rpn("x y & z |", set).unwrap();
+        let tmp = f.node().clone();
+        let result = topological_sort(&tmp);
+
+        result.iter().for_each(|x| println!("{:?}", x));
+    }
+}
+
