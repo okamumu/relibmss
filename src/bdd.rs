@@ -207,10 +207,20 @@ impl BddNode {
         bdd_algo::prob(&mut bdd.clone().borrow_mut(), &self.node, &pv, &mut cache)
     }
 
+    pub fn bmeas(&self, pv: HashMap<String, f64>) -> HashMap<String, f64> {
+        let bdd = self.parent.upgrade().unwrap();
+        bdd_algo::bmeas(&mut bdd.clone().borrow_mut(), &self.node, &pv)
+    }
+
     pub fn prob_interval(&self, pv: HashMap<String, Interval>) -> Interval {
         let bdd = self.parent.upgrade().unwrap();
         let mut cache = HashMap::new();
         bdd_algo::prob(&mut bdd.clone().borrow_mut(), &self.node, &pv, &mut cache)
+    }
+
+    pub fn bmeas_interval(&self, pv: HashMap<String, Interval>) -> HashMap<String, Interval> {
+        let bdd = self.parent.upgrade().unwrap();
+        bdd_algo::bmeas(&mut bdd.clone().borrow_mut(), &self.node, &pv)
     }
 
     // obtain minimal path vectors (mpvs) of monotone BDD

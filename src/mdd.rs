@@ -1,5 +1,4 @@
 use dd::count::*;
-use dd::mdd;
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::rc::Weak;
@@ -326,9 +325,9 @@ mod tests {
     #[test]
     fn test_mdd_mgr() {
         let mut mgr = MddMgr::new();
-        let zero = mgr.zero();
-        let one = mgr.one();
-        let two = mgr.val(2);
+        // let zero = mgr.zero();
+        // let one = mgr.one();
+        // let two = mgr.val(2);
         let mut vars = HashMap::new();
         vars.insert("x".to_string(), 3);
         vars.insert("y".to_string(), 3);
