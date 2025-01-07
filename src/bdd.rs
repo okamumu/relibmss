@@ -1,6 +1,7 @@
 //
 
 use dd::bdd;
+use dd::bdd::Bdd;
 use dd::count::*;
 use dd::dot::Dot;
 use pyo3::exceptions::PyValueError;
@@ -15,6 +16,7 @@ use pyo3::prelude::*;
 
 use crate::bdd_algo;
 use crate::interval::Interval;
+use crate::bdd_path::BddPath;
 
 #[pyclass(unsendable)]
 pub struct BddMgr {
@@ -237,11 +239,8 @@ impl BddNode {
         BddNode::new(bdd.clone(), result)
     }
 
-    pub fn extract(&self) -> Vec<Vec<String>> {
-        let mut path = Vec::new();
-        let mut pathset = Vec::new();
-        bdd_algo::extract(&self.node, &mut path, &mut pathset);
-        pathset
+    pub fn extract(&self) -> PyBddPath {
+        PyBddPath::new(&self)
     }
 
     pub fn size(&self) -> (usize, u64) {
@@ -251,5 +250,34 @@ impl BddNode {
     pub fn count_set(&self) -> u64 {
         let mut cache = HashMap::new();
         bdd_algo::count_set(&self.node, &mut cache)
+    }
+}
+
+#[pyclass(unsendable)]
+pub struct PyBddPath {
+    inner: BddPath,
+}
+
+#[pymethods]
+impl PyBddPath {
+    #[new]
+    fn new(root_node: &BddNode) -> Self {
+        PyBddPath {
+            inner: BddPath::new(&root_node.node),
+        }
+    }
+
+    fn __len__(&self) -> usize {
+        let root = self.inner.root();
+        let mut cache: HashMap<usize, u64> = HashMap::new();
+        bdd_algo::count_set(&root, &mut cache) as usize
+    }
+
+    fn __iter__(slf: PyRef<Self>) -> PyRef<Self> {
+        slf
+    }
+
+    fn __next__(mut slf: PyRefMut<Self>) -> Option<Vec<String>> {
+        slf.inner.next()
     }
 }
