@@ -101,7 +101,6 @@ class Context:
         if not isinstance(arg, _Expression):
             arg = _Expression(arg)
         rpn = arg.to_rpn()
-        print(rpn)
         return self.mdd.rpn(rpn, self.vars)
     
     def const(self, value):

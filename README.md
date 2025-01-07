@@ -67,7 +67,11 @@ top = bss.kofn(2, [A, B, C]) # k-of-n gate
 s = bss.mpvs(top) # s is a set of minimal path vectors (ZDD representation)
 
 # Convert the ZDD representation to a list of sets
-print(s.extract())
+# Convert the ZDD representation to a list of sets
+min_path = s.extract()
+print('The number of minimal path vectors:', len(min_path))
+for x in min_path:
+    print(x)
 ```
 
 ### Draw a BDD
@@ -197,7 +201,14 @@ bdd = bss.getbdd(top)
 print(bdd.size()) # The numbers of nodes and edges in the BDD
 
 s = bdd.mpvs() # Obtain the minimal path vectors (minimal cut sets) from the BDD directly
-print('The number of minimal path sets:', s.count_set())
+
+min_path = s.extract()
+print('The number of minimal path sets:', len(min_path))
+
+print('Example: 100 minimal path sets')
+from itertools import islice
+for x in islice(min_path, 0, 100):
+    print(x)
 ```
 
 ### Importance analysis

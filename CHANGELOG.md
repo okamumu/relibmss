@@ -1,3 +1,7 @@
+# v0.6.0
+
+- Change the method 'extranct' as an Iterator in BSS
+
 # v0.5.2
 
 - Add b-measure for BDD

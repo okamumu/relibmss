@@ -95,4 +95,10 @@ bdd = bss.getbdd(top)
 print(bdd.size()) # The numbers of nodes and edges in the BDD
 
 s = bdd.mpvs() # Obtain the minimal path vectors (minimal cut sets) from the BDD directly
-print('The number of minimal path sets:', s.count_set())
+min_path = s.extract()
+print('The number of minimal path sets:', len(min_path))
+
+print('Example: 100 minimal path sets')
+from itertools import islice
+for x in islice(min_path, 0, 100):
+    print(x)
