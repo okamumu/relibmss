@@ -1,4 +1,4 @@
-name: Build and Release
+name: Build and Release with Custom Docker Container
 
 on:
   push:
@@ -8,38 +8,12 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/okamumu/maturin:1.7.8
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
-
-    - name: Install Rust
-      uses: actions-rs/toolchain@v1
-      with:
-        profile: minimal
-        toolchain: stable
-        override: true
-
-    - name: Add Rust targets
-      run: |
-        rustup target add x86_64-unknown-linux-gnu
-        rustup target add aarch64-unknown-linux-gnu
-
-    - name: Install Zig
-      run: |
-        curl -fsSL https://ziglang.org/download/0.11.0/zig-linux-x86_64-0.11.0.tar.xz | tar -xJ
-        echo "$PWD/zig-linux-x86_64-0.11.0" >> $GITHUB_PATH
-
-    - name: Verify Zig Installation
-      run: |
-        zig version
-
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y python3 python3-pip python3.9 python3.10 python3.11
-        pip install maturin==1.7.8
-        pip install twine
 
     - name: Build for x86_64
       run: |
