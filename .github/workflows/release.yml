@@ -44,10 +44,13 @@ jobs:
         name: dist-folder
         path: dist/
 
-    - name: Publish to PyPI
+    - name: Publish to PyPI using Docker Container
       env:
         TWINE_USERNAME: "__token__"
         TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-        PYTHON_KEYRING_BACKEND: "keyring.backends.null.Keyring"
       run: |
-        twine upload dist/*.whl dist/*.tar.gz
+        docker run --rm \
+          -v ${{ github.workspace }}:/workspace \
+          -w /workspace \
+          ghcr.io/okamumu/maturin:1.7.8 \
+          twine upload dist/*.whl dist/*.tar.gz
