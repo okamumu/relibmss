@@ -1,4 +1,4 @@
-# v0.6.1
+# v0.6.1-0.6.2
 
 - Add get_varorder for BSS
 
