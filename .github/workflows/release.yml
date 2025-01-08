@@ -8,8 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/okamumu/maturin:1.7.8
 
     steps:
     - name: Log in to GHCR
@@ -19,26 +17,23 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GHCR_TOKEN }}
 
-    - name: Checkout repository
-      uses: actions/checkout@v3
-
-    - name: Build for x86_64
+    - name: Pull Docker Image
       run: |
-        mkdir -p dist
-        maturin build --release --target x86_64-unknown-linux-gnu -i python3.9 -i python3.10 -i python3.11 --zig --out dist
+        docker pull ghcr.io/okamumu/maturin:1.7.8
 
-    - name: Build for ARM (aarch64)
+    - name: Run Docker Container
       run: |
-        maturin build --release --target aarch64-unknown-linux-gnu -i python3.9 -i python3.10 -i python3.11 --zig --out dist
-
-    - name: Build source distribution
-      run: |
-        maturin sdist --out dist
-
-    - name: Show dist folder contents
-      run: |
-        echo "Contents of dist folder:"
-        ls -lh dist
+        docker run --rm \
+          -v ${{ github.workspace }}:/workspace \
+          -w /workspace \
+          ghcr.io/okamumu/maturin:1.7.8 \
+          /bin/bash -c "
+          mkdir -p dist && \
+          maturin build --release --target x86_64-unknown-linux-gnu -i python3.9 -i python3.10 -i python3.11 --zig --out dist && \
+          maturin build --release --target aarch64-unknown-linux-gnu -i python3.9 -i python3.10 -i python3.11 --zig --out dist && \
+          maturin sdist --out dist && \
+          ls -lh dist
+          "
 
     - name: Upload dist folder as artifact
       uses: actions/upload-artifact@v3
