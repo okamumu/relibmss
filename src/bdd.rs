@@ -81,6 +81,15 @@ impl BddMgr {
         }
     }
 
+    pub fn get_varorder(&self) -> Vec<String> {
+        let mut result = vec!["?".to_string(); self.vars.len()];
+        for (k,v) in self.vars.iter() {
+            let h = v.header().unwrap();
+            result[h.level()] = k.clone();
+        }
+        result
+    }
+
     pub fn rpn(&mut self, expr: &str, vars: HashSet<String>) -> PyResult<BddNode> {
         let mut stack = Vec::new();
         // let mut bdd = self.bdd.borrow_mut();

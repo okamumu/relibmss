@@ -45,6 +45,9 @@ class Context:
         self.vars.add(name)
         return _Expression(name)
     
+    def get_verorder(self):
+        return self.bdd.get_varorder()
+
     def set_varorder(self, x: list):
         for varname in x:
             self.bdd.defvar(varname)

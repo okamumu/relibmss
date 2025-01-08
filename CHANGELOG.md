@@ -1,3 +1,7 @@
+# v0.6.1
+
+- Add get_varorder for BSS
+
 # v0.6.0
 
 - Change the method 'extranct' as an Iterator in BSS
