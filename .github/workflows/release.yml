@@ -6,7 +6,7 @@ on:
       - 'v*'
 
 jobs:
-  build:
+  build-and-push:
     runs-on: ubuntu-latest
 
     steps:
@@ -20,37 +20,26 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Pull Docker Image
-      run: |
-        docker pull ghcr.io/okamumu/maturin:1.7.8
-
-    - name: Run Docker Container
+    - name: Build and Push in Docker Container
+      env:
+        TWINE_USERNAME: "__token__"
+        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        PYTHON_KEYRING_BACKEND: "keyring.backends.null.Keyring"
       run: |
         docker run --rm \
           -v ${{ github.workspace }}:/workspace \
           -w /workspace \
           ghcr.io/okamumu/maturin:1.7.8 \
           /bin/bash -c "
-          mkdir -p dist && \
-          maturin build --release --target x86_64-unknown-linux-gnu -i python3.9 -i python3.10 -i python3.11 --zig --out dist && \
-          maturin build --release --target aarch64-unknown-linux-gnu -i python3.9 -i python3.10 -i python3.11 --zig --out dist && \
-          maturin sdist --out dist && \
+          set -e
+          echo 'Starting build process...'
+          mkdir -p dist
+          maturin build --release --target x86_64-unknown-linux-gnu -i python3.9 -i python3.10 -i python3.11 --zig --out dist
+          maturin build --release --target aarch64-unknown-linux-gnu -i python3.9 -i python3.10 -i python3.11 --zig --out dist
+          maturin sdist --out dist
+          echo 'Build complete. Listing dist directory contents:'
           ls -lh dist
-          "
-
-    - name: Upload dist folder as artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: dist-folder
-        path: dist/
-
-    - name: Publish to PyPI using Docker Container
-      env:
-        TWINE_USERNAME: "__token__"
-        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-      run: |
-        docker run --rm \
-          -v ${{ github.workspace }}:/workspace \
-          -w /workspace \
-          ghcr.io/okamumu/maturin:1.7.8 \
+          echo 'Uploading to PyPI...'
           twine upload dist/*.whl dist/*.tar.gz
+          echo 'Upload complete.'
+          "
