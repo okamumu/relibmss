@@ -1,3 +1,7 @@
+# v0.6.4
+
+- Add ite for BddNode/MddNode
+
 # v0.6.3
 
 - Chage the interface to compute the probability for MSS

@@ -270,6 +270,13 @@ impl MddNode {
         MddNode::new(self.parent.upgrade().unwrap(), node)
     }
 
+    pub fn ifelse(&self, then: &MddNode, els: &MddNode) -> MddNode {
+        let mddmgr = self.parent.upgrade().unwrap();
+        let mut mdd = mddmgr.borrow_mut();
+        let node = mdd.ifelse(&self.node, &then.node, &els.node);
+        MddNode::new(self.parent.upgrade().unwrap(), node)
+    }
+
     pub fn value(&self, other: i64) -> MddNode {
         let mddmgr = self.parent.upgrade().unwrap();
         let mut mdd = mddmgr.borrow_mut();

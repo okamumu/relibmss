@@ -212,6 +212,16 @@ impl BddNode {
         BddNode::new(bdd.clone(), bdd.clone().borrow_mut().not(&self.node))
     }
 
+    pub fn ifelse(&self, then: &BddNode, else_: &BddNode) -> BddNode {
+        let bdd = self.parent.upgrade().unwrap();
+        BddNode::new(
+            bdd.clone(),
+            bdd.clone()
+                .borrow_mut()
+                .ite(&self.node, &then.node, &else_.node),
+        )
+    }
+
     pub fn prob(&self, pv: HashMap<String, f64>) -> f64 {
         let bdd = self.parent.upgrade().unwrap();
         let mut cache = HashMap::new();
