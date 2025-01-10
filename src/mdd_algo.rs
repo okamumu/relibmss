@@ -1,6 +1,6 @@
 // mod ft
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::ops::{Add, Mul, Sub};
 
 use dd::common::NodeId;
@@ -12,19 +12,20 @@ use dd::{mdd, mtmdd};
 pub fn mddprob<T>(
     mdd: &mut mtmdd2::MtMdd2<i64>,
     node: &mtmdd2::MtMdd2Node<i64>,
-    pv: HashMap<String, Vec<T>>,
-) -> HashMap<i64, T>
+    pv: &HashMap<String, Vec<T>>,
+    ss: &HashSet<i64>,
+) -> T
 where
     T: Add<Output = T> + Sub<Output = T> + Mul<Output = T> + Clone + Copy + PartialEq + From<f64>,
 {
     match node {
         mtmdd2::MtMdd2Node::Value(fnode) => {
             let mut cache = HashMap::new();
-            vmddprob(&mut mdd.mtmdd_mut(), &fnode, &pv, &mut cache)
+            vmddprob(&mut mdd.mtmdd_mut(), &fnode, &pv, &ss, &mut cache)
         }
         mtmdd2::MtMdd2Node::Bool(fnode) => {
             let mut cache = HashMap::new();
-            bmddprob(&mut mdd.mdd_mut(), &fnode, &pv, &mut cache)
+            bmddprob(&mut mdd.mdd_mut(), &fnode, &pv, &ss, &mut cache)
         }
         _ => panic!("The node should be either Value or Bool"),
     }
@@ -34,8 +35,9 @@ fn vmddprob<T>(
     mdd: &mut mtmdd::MtMdd<i64>,
     node: &mtmdd::MtMddNode<i64>,
     pv: &HashMap<String, Vec<T>>,
-    cache: &mut HashMap<NodeId, HashMap<i64, T>>,
-) -> HashMap<i64, T>
+    ss: &HashSet<i64>,
+    cache: &mut HashMap<NodeId, T>,
+) -> T
 where
     T: Add<Output = T> + Sub<Output = T> + Mul<Output = T> + Clone + Copy + PartialEq + From<f64>,
 {
@@ -45,27 +47,24 @@ where
         None => {
             let result = match node {
                 mtmdd::MtMddNode::Terminal(fnode) => {
-                    let mut map = HashMap::new();
                     let value = fnode.value();
-                    map.insert(value, T::from(1.0));
-                    map
+                    if ss.contains(&value) {
+                        T::from(1.0)
+                    } else {
+                        T::from(0.0)
+                    }
                 }
                 mtmdd::MtMddNode::NonTerminal(fnode) => {
                     let label = fnode.header().label();
+                    let mut result = T::from(0.0);
                     let fp = pv.get(label).unwrap();
-                    let mut map = HashMap::new();
                     for (i, x) in fnode.iter().enumerate() {
-                        let tmp = vmddprob(mdd, &x, pv, cache);
-                        for (k, v) in tmp.iter() {
-                            let key = *k;
-                            let value = *v;
-                            let entry = map.entry(key).or_insert(T::from(0.0));
-                            *entry = *entry + fp[i] * value;
-                        }
+                        let tmp = vmddprob(mdd, &x, pv, ss, cache);
+                        result = result + fp[i] * tmp;
                     }
-                    map
+                    result
                 }
-                mtmdd::MtMddNode::Undet => HashMap::new(),
+                mtmdd::MtMddNode::Undet => T::from(0.0),
             };
             cache.insert(key, result.clone());
             result
@@ -77,8 +76,9 @@ fn bmddprob<T>(
     mdd: &mut mdd::Mdd,
     node: &mdd::MddNode,
     pv: &HashMap<String, Vec<T>>,
-    cache: &mut HashMap<NodeId, HashMap<i64, T>>,
-) -> HashMap<i64, T>
+    ss: &HashSet<i64>,
+    cache: &mut HashMap<NodeId, T>,
+) -> T
 where
     T: Add<Output = T> + Sub<Output = T> + Mul<Output = T> + Clone + Copy + PartialEq + From<f64>,
 {
@@ -88,33 +88,30 @@ where
         None => {
             let result = match node {
                 mdd::MddNode::Zero => {
-                    let mut map = HashMap::new();
-                    let value = 0;
-                    map.insert(value, T::from(1.0));
-                    map
+                    if ss.contains(&0) {
+                        T::from(1.0)
+                    } else {
+                        T::from(0.0)
+                    }
                 }
                 mdd::MddNode::One => {
-                    let mut map = HashMap::new();
-                    let value = 1;
-                    map.insert(value, T::from(1.0));
-                    map
+                    if ss.contains(&1) {
+                        T::from(1.0)
+                    } else {
+                        T::from(0.0)
+                    }
                 }
                 mdd::MddNode::NonTerminal(fnode) => {
                     let label = fnode.header().label();
                     let fp = pv.get(label).unwrap();
-                    let mut map = HashMap::new();
+                    let mut result = T::from(0.0);
                     for (i, x) in fnode.iter().enumerate() {
-                        let tmp = bmddprob(mdd, &x, pv, cache);
-                        for (k, v) in tmp.iter() {
-                            let key = *k;
-                            let value = *v;
-                            let entry = map.entry(key).or_insert(T::from(0.0));
-                            *entry = *entry + fp[i] * value;
-                        }
+                        let tmp = bmddprob(mdd, &x, pv, ss, cache);
+                        result = result + fp[i] * tmp;
                     }
-                    map
+                    result
                 }
-                mdd::MddNode::Undet => HashMap::new(),
+                mdd::MddNode::Undet => T::from(0.0),
             };
             cache.insert(key, result.clone());
             result

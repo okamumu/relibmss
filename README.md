@@ -338,7 +338,7 @@ prob = {
 }
 
 # Calculate the probability
-print(mss.prob(ss, prob))
+print(mss.prob(ss, prob, [0,1,2])) # compute probability that the system is in state 0, 1, 2
 ```
 
 ### Draw an MDD

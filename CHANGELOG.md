@@ -1,3 +1,7 @@
+# v0.6.3
+
+- Chage the interface to compute the probability for MSS
+
 # v0.6.1-0.6.2
 
 - Add get_varorder for BSS

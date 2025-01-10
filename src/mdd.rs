@@ -1,5 +1,6 @@
 use dd::count::*;
 use std::cell::RefCell;
+use std::collections::HashSet;
 use std::rc::Rc;
 use std::rc::Weak;
 
@@ -290,16 +291,16 @@ impl MddNode {
         }
     }
 
-    pub fn prob(&mut self, pv: HashMap<String, Vec<f64>>) -> HashMap<i64, f64> {
+    pub fn prob(&mut self, pv: HashMap<String, Vec<f64>>, ss: HashSet<i64>) -> f64 {
         let mgr = self.parent.upgrade().unwrap();
         let mut mdd = mgr.borrow_mut();
-        mdd_algo::mddprob(&mut mdd, &self.node, pv)
+        mdd_algo::mddprob(&mut mdd, &self.node, &pv, &ss)
     }
 
-    pub fn prob_interval(&mut self, pv: HashMap<String, Vec<Interval>>) -> HashMap<i64, Interval> {
+    pub fn prob_interval(&mut self, pv: HashMap<String, Vec<Interval>>, ss: HashSet<i64>) -> Interval {
         let mgr = self.parent.upgrade().unwrap();
         let mut mdd = mgr.borrow_mut();
-        mdd_algo::mddprob(&mut mdd, &self.node, pv)
+        mdd_algo::mddprob(&mut mdd, &self.node, &pv, &ss)
     }
 
     pub fn mpvs(&mut self) -> MddNode {

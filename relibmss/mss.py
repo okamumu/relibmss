@@ -164,14 +164,16 @@ class Context:
                 raise ValueError("The element must be a Case object")
             return self.ifelse(x.cond, x.then, self.switch(conds[1:]))
 
-    def prob(self, arg: _Expression, values: dict):
+    def prob(self, arg: _Expression, values: dict, sv: list):
+        ss = set(sv)
         top = self.getmdd(arg)
-        return top.prob(values)
+        return top.prob(values, ss)
         
-    def prob_interval(self, arg: _Expression, values: dict):
+    def prob_interval(self, arg: _Expression, values: dict, sv: list):
         values = {k: [ms.Interval(u[0], u[1]) for u in v] for k, v in values.items()}
+        ss = set(sv)
         top = self.getmdd(arg)
-        return top.prob_interval(values)
+        return top.prob_interval(values, ss)
     
     def mpvs(self, arg: _Expression):
         top = self.getmdd(arg)
