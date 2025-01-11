@@ -1,11 +1,34 @@
 import relibmss as ms
 
+# def _to_rpn(expr):
+#     stack = [expr]
+#     rpn = []
+#     while len(stack) > 0:
+#         node = stack.pop()
+#         if isinstance(node.value, tuple):
+#             for i in range(len(node.value) - 1, -1, -1):
+#                 stack.append(node.value[i])
+#         else:
+#             rpn.append(str(node.value))
+#     return ' '.join(rpn)
+
 def _to_rpn(expr):
     stack = [expr]
     rpn = []
+    cache = set([])
     while len(stack) > 0:
         node = stack.pop()
-        if isinstance(node.value, tuple):
+        idnum = str(id(node))
+        if isinstance(node, tuple) and node[0] == "save" and len(stack) > 0:
+            idnum = node[1]
+            rpn.append('save({})'.format(idnum))
+            cache.add(idnum)
+        elif isinstance(node, tuple) and node[0] == "save":
+            pass
+        elif idnum in cache:
+            rpn.append('load({})'.format(idnum))
+        elif isinstance(node.value, tuple):
+            stack.append(("save", idnum))
             for i in range(len(node.value) - 1, -1, -1):
                 stack.append(node.value[i])
         else:

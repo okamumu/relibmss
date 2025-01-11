@@ -92,7 +92,7 @@ impl BddMgr {
 
     pub fn rpn(&mut self, expr: &str, vars: HashSet<String>) -> PyResult<BddNode> {
         let mut stack = Vec::new();
-        // let mut bdd = self.bdd.borrow_mut();
+        let mut cache = HashMap::new();
         for token in expr.split_whitespace() {
             match token {
                 "0" | "False" => {
@@ -132,6 +132,22 @@ impl BddMgr {
                     let then = stack.pop().unwrap();
                     let cond = stack.pop().unwrap();
                     stack.push(bdd.ite(&cond, &then, &else_));
+                }
+                _ if token.starts_with("save(") && token.ends_with(")") => {
+                    let name = &token[5..token.len() - 1];
+                    if let Some(node) = stack.last() {
+                        cache.insert(name.to_string(), node.clone());
+                    } else {
+                        return Err(PyValueError::new_err("Stack is empty for save operation"));
+                    }
+                }
+                _ if token.starts_with("load(") && token.ends_with(")") => {
+                    let name = &token[5..token.len() - 1];
+                    if let Some(node) = cache.get(name) {
+                        stack.push(node.clone());
+                    } else {
+                        return Err(PyValueError::new_err(format!("No cached value for {}", name)));
+                    }
                 }
                 _ => {
                     if let Some(node) = self.vars.get(token) {
