@@ -1,3 +1,7 @@
+# v0.6.5
+
+- Change the algorithm to create RPN
+
 # v0.6.4
 
 - Add ite for BddNode/MddNode
