@@ -1,10 +1,6 @@
 use crate::interval::Interval;
 use pyo3::{exceptions::PyValueError, prelude::*};
-use rust_mss::{
-    bss::{BddMgr, BddNode},
-    bdd_path::{BddPath, ZddPath},
-    prelude::*,
-};
+use rust_mss::prelude::*;
 
 impl ProbValue for Interval {}
 
@@ -104,7 +100,11 @@ impl PyBddNode {
         self.0.prob(&pv, &ss)
     }
 
-    pub fn bmeas_interval(&self, pv: HashMap<String, Interval>, ss: Vec<bool>) -> HashMap<String, Interval> {
+    pub fn bmeas_interval(
+        &self,
+        pv: HashMap<String, Interval>,
+        ss: Vec<bool>,
+    ) -> HashMap<String, Interval> {
         self.0.bmeas(&pv, &ss)
     }
 

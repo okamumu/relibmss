@@ -1,7 +1,7 @@
 use pyo3::{pymodule, types::PyModule, PyResult, Python};
 
-pub mod interval;
 pub mod bdd;
+pub mod interval;
 pub mod mdd;
 
 #[pymodule]
