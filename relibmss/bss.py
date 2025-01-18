@@ -70,7 +70,7 @@ class Context:
         if not isinstance(arg, _Expression):
             arg = _Expression(arg)
         rpn = arg._to_rpn()
-        return self.bdd.rpn(rpn, self.vars)
+        return self.bdd.rpn(rpn)
     
     def const(self, value):
         return _Expression(value)
@@ -124,26 +124,26 @@ class Context:
         else:
             return self.ifelse(args[0], self.kofn(k-1, args[1:]), self.kofn(k, args[1:]))
 
-    def prob(self, arg: _Expression, values: dict):
+    def prob(self, arg: _Expression, values: dict, ss = [True]):
         top = self.getbdd(arg)
-        return top.prob(values)
+        return top.prob(values, ss)
     
-    def bmeas(self, arg: _Expression, values: dict):
+    def bmeas(self, arg: _Expression, values: dict, ss = [True]):
         top = self.getbdd(arg)
-        return top.bmeas(values)
+        return top.bmeas(values, ss)
 
-    def prob_interval(self, arg: _Expression, values: dict):
+    def prob_interval(self, arg: _Expression, values: dict, ss = [True]):
         values = {k: ms.Interval(v[0], v[1]) for k, v in values.items()}
         top = self.getbdd(arg)
-        return top.prob_interval(values)
+        return top.prob_interval(values, ss)
 
-    def bmeas_interval(self, arg: _Expression, values: dict):
+    def bmeas_interval(self, arg: _Expression, values: dict, ss = [True]):
         values = {k: ms.Interval(v[0], v[1]) for k, v in values.items()}
         top = self.getbdd(arg)
-        return top.bmeas_interval(values)
+        return top.bmeas_interval(values, ss)
 
-    def mpvs(self, arg: _Expression):
+    def minpath(self, arg: _Expression):
         top = self.getbdd(arg)
-        return top.mpvs()
+        return top.minpath()
     
 

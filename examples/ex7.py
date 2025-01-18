@@ -24,5 +24,5 @@ C = mss.defvar('C', 3)
 sx = gate1(mss, B, C)
 ss = gate2(mss, A, sx)
 
-mdd = mss.mpvs(ss)
+mdd = mss.minpath(ss)
 print(mdd.dot())

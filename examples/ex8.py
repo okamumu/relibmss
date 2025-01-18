@@ -39,11 +39,11 @@ for x in result:
 # print(str(expr))
 
 bdd = bss.getbdd(expr)
-print(bdd.size())
+# print(bdd.size())
 
-mpvs = bdd.mpvs()
-print(mpvs.count_set())
+paths = bdd.minpath()
+print(paths.zdd_count([True]))
 
 prob = {'p'+str(i): 0.9 for i in range(m)}
 
-print(bdd.prob(prob))
+print(bdd.prob(prob, [True]))
