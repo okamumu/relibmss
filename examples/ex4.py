@@ -92,7 +92,7 @@ g144 = g111 | g112 | g143 | c[52]
 top = g126 & g138 & g144
 
 bdd = bss.getbdd(top)
-# print(bdd.size()) # The number of nodes in the BDD
+print(bdd.size()) # The number of nodes in the BDD
 
 s = bdd.minpath() # Obtain the minimal path vectors (minimal cut sets) from the BDD directly
 min_path = s.zdd_extract([True])

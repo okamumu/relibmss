@@ -127,6 +127,10 @@ impl PyBddNode {
     pub fn zdd_extract(&self, ss: Vec<bool>) -> PyZddPath {
         PyZddPath::new(&self, ss.clone())
     }
+
+    pub fn size(&self) -> (u64, u64, u64) {
+        self.0.size()
+    }
 }
 
 #[pyclass(unsendable)]

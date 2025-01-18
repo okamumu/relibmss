@@ -136,6 +136,10 @@ impl PyMddNode {
         let ss = ss.iter().map(|x| *x).collect::<HashSet<_>>();
         self.0.zmdd_count(&ss)
     }
+
+    pub fn size(&self) -> (u64, u64, u64) {
+        self.0.size()
+    }
 }
 
 #[cfg(test)]
