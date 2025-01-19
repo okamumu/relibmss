@@ -1,3 +1,7 @@
+# v0.7.1
+
+- Bug fix: comparation operator for BddNode/MddNode
+
 # v0.7.0
 
 - Change the dependencies for Rust packages

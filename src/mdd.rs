@@ -88,27 +88,31 @@ impl PyMddNode {
         PyMddNode(self.0.div(&other.0))
     }
 
-    pub fn __eq__(&self, other: &PyMddNode) -> PyMddNode {
+    fn __eq__(&self, other: &PyMddNode) -> bool {
+        self.0.get_id() == other.0.get_id()
+    }
+
+    pub fn eq(&self, other: &PyMddNode) -> PyMddNode {
         PyMddNode(self.0.eq(&other.0))
     }
 
-    pub fn __ne__(&self, other: &PyMddNode) -> PyMddNode {
+    pub fn ne(&self, other: &PyMddNode) -> PyMddNode {
         PyMddNode(self.0.ne(&other.0))
     }
 
-    pub fn __lt__(&self, other: &PyMddNode) -> PyMddNode {
+    pub fn lt(&self, other: &PyMddNode) -> PyMddNode {
         PyMddNode(self.0.lt(&other.0))
     }
 
-    pub fn __le__(&self, other: &PyMddNode) -> PyMddNode {
+    pub fn le(&self, other: &PyMddNode) -> PyMddNode {
         PyMddNode(self.0.le(&other.0))
     }
 
-    pub fn __gt__(&self, other: &PyMddNode) -> PyMddNode {
+    pub fn gt(&self, other: &PyMddNode) -> PyMddNode {
         PyMddNode(self.0.gt(&other.0))
     }
 
-    pub fn __ge__(&self, other: &PyMddNode) -> PyMddNode {
+    pub fn ge(&self, other: &PyMddNode) -> PyMddNode {
         PyMddNode(self.0.ge(&other.0))
     }
 

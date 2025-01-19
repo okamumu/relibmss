@@ -83,6 +83,10 @@ impl PyBddNode {
         PyBddNode(self.0.not())
     }
 
+    fn __eq__(&self, other: &PyBddNode) -> bool {
+        self.0.get_id() == other.0.get_id()
+    }
+
     pub fn ifelse(&self, then: &PyBddNode, else_: &PyBddNode) -> PyBddNode {
         PyBddNode(self.0.ite(&then.0, &else_.0))
     }
