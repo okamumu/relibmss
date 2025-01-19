@@ -1,8 +1,7 @@
 use crate::interval::Interval;
 use pyo3::{exceptions::PyValueError, prelude::*};
-use rust_mss::prelude::*;
-
-impl ProbValue for Interval {}
+use bss::prelude::*;
+use std::collections::HashMap;
 
 #[pyclass(unsendable)]
 pub struct PyBddMgr(BddMgr);

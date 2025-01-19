@@ -1,6 +1,7 @@
 use crate::interval::Interval;
 use pyo3::{exceptions::PyValueError, prelude::*};
-use rust_mss::prelude::*;
+use mss::prelude::*;
+use std::collections::{HashMap, HashSet};
 
 #[pyclass(unsendable)]
 pub struct PyMddMgr(MddMgr<i64>);
