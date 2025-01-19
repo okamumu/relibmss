@@ -18,5 +18,4 @@ print(source)
 
 # Example: Display the BDD in Jupyter Notebook
 from graphviz import Source
-from IPython.display import Image, display
-Image(Source(source).pipe(format='png'))
+Source(source)

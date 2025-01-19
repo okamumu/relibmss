@@ -1,3 +1,7 @@
+# v0.7.0
+
+- Change the dependencies for Rust packages
+
 # v0.6.5
 
 - Change the algorithm to create RPN

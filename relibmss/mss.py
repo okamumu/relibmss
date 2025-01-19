@@ -107,7 +107,7 @@ class _Case:
 class Context:
     def __init__(self):
         self.vars = {}
-        self.mdd = ms.MddMgr()
+        self.mdd = ms.MDD()
 
     def defvar(self, name, domain):
         self.vars[name] = domain
@@ -188,19 +188,17 @@ class Context:
             return self.ifelse(x.cond, x.then, self.switch(conds[1:]))
 
     def prob(self, arg: _Expression, values: dict, sv: list):
-        ss = set(sv)
         top = self.getmdd(arg)
-        return top.prob(values, ss)
+        return top.prob(values, sv)
         
     def prob_interval(self, arg: _Expression, values: dict, sv: list):
         values = {k: [ms.Interval(u[0], u[1]) for u in v] for k, v in values.items()}
-        ss = set(sv)
         top = self.getmdd(arg)
-        return top.prob_interval(values, ss)
+        return top.prob_interval(values, sv)
     
-    def mpvs(self, arg: _Expression):
+    def minpath(self, arg: _Expression):
         top = self.getmdd(arg)
-        return top.mpvs()
+        return top.minpath()
 
 
 

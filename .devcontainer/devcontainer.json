@@ -15,7 +15,5 @@
                 "rust-lang.rust-analyzer"
             ]        
         }
-    },
-    "postCreateCommand": "./setup.sh",
-    "remoteUser": "vscode"
+    }
 }

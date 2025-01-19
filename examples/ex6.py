@@ -30,7 +30,7 @@ ss = gate2(mss, A, sx)
 
 mdd = mss.getmdd(ss)
 source = mdd.dot()
+print(source)
 
 from graphviz import Source
-from IPython.display import Image, display
-Image(Source(source).pipe(format='png'))
+Source(source)
