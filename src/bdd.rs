@@ -19,30 +19,32 @@ impl PyBddMgr {
     }
 
     // size
-    pub fn size(&self) -> (usize, usize, usize) {
+    pub fn _size(&self) -> (usize, usize, usize) {
         self.0.size()
     }
 
-    // zero
-    pub fn zero(&self) -> PyBddNode {
-        PyBddNode(self.0.zero())
+    pub fn _value(&self, val: bool) -> PyBddNode {
+        if val {
+            PyBddNode(self.0.one())
+        } else {
+            PyBddNode(self.0.zero())
+        }
     }
 
-    // one
-    pub fn one(&self) -> PyBddNode {
-        PyBddNode(self.0.one())
+    pub fn _create_node(&self, hid: HeaderId, f0: &PyBddNode, f1: &PyBddNode) -> PyBddNode {
+        PyBddNode(self.0.create_node(hid, &f0.0, &f1.0))
     }
 
     // defvar
-    pub fn defvar(&mut self, var: &str) -> PyBddNode {
+    pub fn _defvar(&mut self, var: &str) -> PyBddNode {
         PyBddNode(self.0.defvar(var))
     }
 
-    pub fn get_varorder(&self) -> Vec<String> {
+    pub fn _get_varorder(&self) -> Vec<String> {
         self.0.get_varorder()
     }
 
-    pub fn rpn(&mut self, expr: &str) -> PyResult<PyBddNode> {
+    pub fn _rpn(&mut self, expr: &str) -> PyResult<PyBddNode> {
         if let Ok(node) = self.0.rpn(expr) {
             Ok(PyBddNode(node))
         } else {
@@ -50,60 +52,91 @@ impl PyBddMgr {
         }
     }
 
-    pub fn And(&self, nodes: Vec<PyBddNode>) -> PyBddNode {
+    pub fn _and(&self, nodes: Vec<PyBddNode>) -> PyBddNode {
         let xs = nodes.iter().map(|x| x.0.clone()).collect::<Vec<_>>();
         PyBddNode(self.0.and(&xs))
     }
 
-    pub fn Or(&self, nodes: Vec<PyBddNode>) -> PyBddNode {
+    pub fn _or(&self, nodes: Vec<PyBddNode>) -> PyBddNode {
         let xs = nodes.iter().map(|x| x.0.clone()).collect::<Vec<_>>();
         PyBddNode(self.0.or(&xs))
+    }
+
+    pub fn _kofn(&self, k: usize, nodes: Vec<PyBddNode>) -> PyBddNode {
+        let xs = nodes.iter().map(|x| x.0.clone()).collect::<Vec<_>>();
+        PyBddNode(self.0.kofn(k, &xs))
     }
 }
 
 #[pymethods]
 impl PyBddNode {
-    pub fn dot(&self) -> String {
+    pub fn _get_id(&self) -> usize {
+        self.0.get_id()
+    }
+
+    pub fn _get_header(&self) -> Option<HeaderId> {
+        self.0.get_header()
+    }
+
+    pub fn _get_level(&self) -> Option<usize> {
+        self.0.get_level()
+    }
+
+    pub fn _get_label(&self) -> Option<String> {
+        self.0.get_label()
+    }
+
+    pub fn _get_children(&self) -> Option<(PyBddNode, PyBddNode)> {
+        if let Some(node) = self.0.get_children() {
+            let f0 = PyBddNode(node.0.clone());
+            let f1 = PyBddNode(node.1.clone());
+            Some((f0, f1))
+        } else {
+            None
+        }
+    }
+
+    pub fn _dot(&self) -> String {
         self.0.dot()
     }
 
-    pub fn __and__(&self, other: &PyBddNode) -> PyBddNode {
+    pub fn _and(&self, other: &PyBddNode) -> PyBddNode {
         PyBddNode(self.0.and(&other.0))
     }
 
-    pub fn __or__(&self, other: &PyBddNode) -> PyBddNode {
+    pub fn _or(&self, other: &PyBddNode) -> PyBddNode {
         PyBddNode(self.0.or(&other.0))
     }
 
-    pub fn __xor__(&self, other: &PyBddNode) -> PyBddNode {
+    pub fn _xor(&self, other: &PyBddNode) -> PyBddNode {
         PyBddNode(self.0.xor(&other.0))
     }
 
-    fn __invert__(&self) -> PyBddNode {
+    pub fn _not(&self) -> PyBddNode {
         PyBddNode(self.0.not())
     }
 
-    fn __eq__(&self, other: &PyBddNode) -> bool {
+    pub fn _equiv(&self, other: &PyBddNode) -> bool {
         self.0.get_id() == other.0.get_id()
     }
 
-    pub fn ifelse(&self, then: &PyBddNode, else_: &PyBddNode) -> PyBddNode {
+    pub fn _ifelse(&self, then: &PyBddNode, else_: &PyBddNode) -> PyBddNode {
         PyBddNode(self.0.ite(&then.0, &else_.0))
     }
 
-    pub fn prob(&self, pv: HashMap<String, f64>, ss: Vec<bool>) -> f64 {
+    pub fn _prob(&self, pv: HashMap<String, f64>, ss: Vec<bool>) -> f64 {
         self.0.prob(&pv, &ss)
     }
 
-    pub fn bmeas(&self, pv: HashMap<String, f64>, ss: Vec<bool>) -> HashMap<String, f64> {
+    pub fn _bmeas(&self, pv: HashMap<String, f64>, ss: Vec<bool>) -> HashMap<String, f64> {
         self.0.bmeas(&pv, &ss)
     }
 
-    pub fn prob_interval(&self, pv: HashMap<String, Interval>, ss: Vec<bool>) -> Interval {
+    pub fn _prob_interval(&self, pv: HashMap<String, Interval>, ss: Vec<bool>) -> Interval {
         self.0.prob(&pv, &ss)
     }
 
-    pub fn bmeas_interval(
+    pub fn _bmeas_interval(
         &self,
         pv: HashMap<String, Interval>,
         ss: Vec<bool>,
@@ -111,28 +144,28 @@ impl PyBddNode {
         self.0.bmeas(&pv, &ss)
     }
 
-    pub fn minpath(&self) -> PyBddNode {
+    pub fn _minpath(&self) -> PyBddNode {
         PyBddNode(self.0.minpath())
     }
 
-    pub fn bdd_count(&self, ss: Vec<bool>) -> u64 {
+    pub fn _size(&self) -> (u64, u64, u64) {
+        self.0.size()
+    }
+
+    pub fn _bdd_count(&self, ss: Vec<bool>) -> u64 {
         self.0.bdd_count(&ss)
     }
 
-    pub fn zdd_count(&self, ss: Vec<bool>) -> u64 {
+    pub fn _zdd_count(&self, ss: Vec<bool>) -> u64 {
         self.0.zdd_count(&ss)
     }
 
-    pub fn bdd_extract(&self, ss: Vec<bool>) -> PyBddPath {
+    pub fn _bdd_extract(&self, ss: Vec<bool>) -> PyBddPath {
         PyBddPath::new(&self, ss.clone())
     }
 
-    pub fn zdd_extract(&self, ss: Vec<bool>) -> PyZddPath {
+    pub fn _zdd_extract(&self, ss: Vec<bool>) -> PyZddPath {
         PyZddPath::new(&self, ss.clone())
-    }
-
-    pub fn size(&self) -> (u64, u64, u64) {
-        self.0.size()
     }
 }
 
@@ -188,7 +221,7 @@ impl PyZddPath {
     }
 
     fn __len__(&self) -> usize {
-        self.bddnode.bdd_count(&self.domain) as usize
+        self.bddnode.zdd_count(&self.domain) as usize
     }
 
     fn __iter__(slf: PyRef<Self>) -> PyRef<Self> {

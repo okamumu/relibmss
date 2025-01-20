@@ -4,11 +4,11 @@ use mss::prelude::*;
 use std::collections::{HashMap, HashSet};
 
 #[pyclass(unsendable)]
-pub struct PyMddMgr(MddMgr<i64>);
+pub struct PyMddMgr(MddMgr<i32>);
 
 #[pyclass(unsendable)]
 #[derive(Clone, Debug)]
-pub struct PyMddNode(MddNode<i64>);
+pub struct PyMddNode(MddNode<i32>);
 
 #[pymethods]
 impl PyMddMgr {
@@ -17,23 +17,31 @@ impl PyMddMgr {
         PyMddMgr(MddMgr::new())
     }
 
-    pub fn size(&self) -> (usize, usize, usize, usize) {
+    pub fn _size(&self) -> (usize, usize, usize, usize) {
         self.0.size()
     }
 
-    pub fn boolean(&self, val: bool) -> PyMddNode {
+    pub fn _boolean(&self, val: bool) -> PyMddNode {
         PyMddNode(self.0.boolean(val))
     }
 
-    pub fn value(&self, val: i64) -> PyMddNode {
+    pub fn _value(&self, val: i32) -> PyMddNode {
         PyMddNode(self.0.value(val))
     }
 
-    pub fn defvar(&mut self, label: &str, range: usize) -> PyMddNode {
+    pub fn _create_node(&self, hid: HeaderId, nodes: Vec<PyMddNode>) -> PyMddNode {
+        PyMddNode(self.0.create_node(hid, &nodes.iter().map(|x| x.0.clone()).collect::<Vec<_>>()))
+    }
+
+    pub fn _defvar(&mut self, label: &str, range: usize) -> PyMddNode {
         PyMddNode(self.0.defvar(label, range))
     }
 
-    pub fn rpn(&mut self, rpn: &str, vars: HashMap<String, usize>) -> PyResult<PyMddNode> {
+    pub fn _get_varorder(&self) -> Vec<(String, usize)> {
+        self.0.get_varorder()
+    }
+
+    pub fn _rpn(&mut self, rpn: &str, vars: HashMap<String, usize>) -> PyResult<PyMddNode> {
         if let Ok(node) = self.0.rpn(rpn, &vars) {
             Ok(PyMddNode(node))
         } else {
@@ -41,26 +49,22 @@ impl PyMddMgr {
         }
     }
 
-    pub fn And(&mut self, nodes: Vec<PyMddNode>) -> PyMddNode {
+    pub fn _and(&mut self, nodes: Vec<PyMddNode>) -> PyMddNode {
         let xs = nodes.iter().map(|x| x.0.clone()).collect::<Vec<_>>();
         PyMddNode(self.0.and(&xs))
     }
 
-    pub fn Or(&mut self, nodes: Vec<PyMddNode>) -> PyMddNode {
+    pub fn _or(&mut self, nodes: Vec<PyMddNode>) -> PyMddNode {
         let xs = nodes.iter().map(|x| x.0.clone()).collect::<Vec<_>>();
         PyMddNode(self.0.or(&xs))
     }
 
-    pub fn Not(&mut self, node: &PyMddNode) -> PyMddNode {
-        PyMddNode(node.0.not())
-    }
-
-    pub fn Min(&mut self, nodes: Vec<PyMddNode>) -> PyMddNode {
+    pub fn _min(&mut self, nodes: Vec<PyMddNode>) -> PyMddNode {
         let xs = nodes.iter().map(|x| x.0.clone()).collect::<Vec<_>>();
         PyMddNode(self.0.min(&xs))
     }
 
-    pub fn Max(&mut self, nodes: Vec<PyMddNode>) -> PyMddNode {
+    pub fn _max(&mut self, nodes: Vec<PyMddNode>) -> PyMddNode {
         let xs = nodes.iter().map(|x| x.0.clone()).collect::<Vec<_>>();
         PyMddNode(self.0.max(&xs))
     }
@@ -68,99 +72,190 @@ impl PyMddMgr {
 
 #[pymethods]
 impl PyMddNode {
-    pub fn dot(&self) -> String {
+    pub fn _get_id(&self) -> (usize, usize) {
+        self.0.get_id2()
+    }
+
+    pub fn _get_header(&self) -> Option<HeaderId> {
+        self.0.get_header()
+    }
+
+    pub fn _get_level(&self) -> Option<usize> {
+        self.0.get_level()
+    }
+
+    pub fn _get_label(&self) -> Option<String> {
+        self.0.get_label()
+    }
+
+    pub fn _get_children(&self) -> Option<Vec<PyMddNode>> {
+        if let Some(x) = self.0.get_children() {
+            let res = x.iter().map(|x| PyMddNode(x.clone())).collect::<Vec<_>>();
+            Some(res)
+        } else {
+            None
+        }
+    }
+
+    pub fn _is_boolean(&self) -> bool {
+        self.0.is_boolean()
+    }
+
+    pub fn _dot(&self) -> String {
         self.0.dot()
     }
 
-    pub fn __add__(&self, other: &PyMddNode) -> PyMddNode {
+    pub fn _add(&self, other: &PyMddNode) -> PyMddNode {
         PyMddNode(self.0.add(&other.0))
     }
 
-    pub fn __sub__(&self, other: &PyMddNode) -> PyMddNode {
+    pub fn _sub(&self, other: &PyMddNode) -> PyMddNode {
         PyMddNode(self.0.sub(&other.0))
     }
 
-    pub fn __mul__(&self, other: &PyMddNode) -> PyMddNode {
+    pub fn _mul(&self, other: &PyMddNode) -> PyMddNode {
         PyMddNode(self.0.mul(&other.0))
     }
 
-    pub fn __truediv__(&self, other: &PyMddNode) -> PyMddNode {
+    pub fn _div(&self, other: &PyMddNode) -> PyMddNode {
         PyMddNode(self.0.div(&other.0))
     }
 
-    fn __eq__(&self, other: &PyMddNode) -> bool {
+    pub fn _equiv(&self, other: &PyMddNode) -> bool {
         self.0.get_id() == other.0.get_id()
     }
 
-    pub fn eq(&self, other: &PyMddNode) -> PyMddNode {
+    pub fn _eq(&self, other: &PyMddNode) -> PyMddNode {
         PyMddNode(self.0.eq(&other.0))
     }
 
-    pub fn ne(&self, other: &PyMddNode) -> PyMddNode {
+    pub fn _ne(&self, other: &PyMddNode) -> PyMddNode {
         PyMddNode(self.0.ne(&other.0))
     }
 
-    pub fn lt(&self, other: &PyMddNode) -> PyMddNode {
+    pub fn _lt(&self, other: &PyMddNode) -> PyMddNode {
         PyMddNode(self.0.lt(&other.0))
     }
 
-    pub fn le(&self, other: &PyMddNode) -> PyMddNode {
+    pub fn _le(&self, other: &PyMddNode) -> PyMddNode {
         PyMddNode(self.0.le(&other.0))
     }
 
-    pub fn gt(&self, other: &PyMddNode) -> PyMddNode {
+    pub fn _gt(&self, other: &PyMddNode) -> PyMddNode {
         PyMddNode(self.0.gt(&other.0))
     }
 
-    pub fn ge(&self, other: &PyMddNode) -> PyMddNode {
+    pub fn _ge(&self, other: &PyMddNode) -> PyMddNode {
         PyMddNode(self.0.ge(&other.0))
     }
 
-    pub fn ifelse(&self, then: &PyMddNode, els: &PyMddNode) -> PyMddNode {
+    pub fn _not(&mut self) -> PyMddNode {
+        PyMddNode(self.0.not())
+    }
+
+    pub fn _ifelse(&self, then: &PyMddNode, els: &PyMddNode) -> PyMddNode {
         PyMddNode(self.0.ite(&then.0, &els.0))
     }
 
-    pub fn prob(&mut self, pv: HashMap<String, Vec<f64>>, ss: Vec<i64>) -> f64 {
+    pub fn _prob(&mut self, pv: HashMap<String, Vec<f64>>, ss: Vec<i32>) -> f64 {
         self.0.prob(&pv, &ss)
     }
 
-    pub fn prob_interval(&mut self, pv: HashMap<String, Vec<Interval>>, ss: Vec<i64>) -> Interval {
+    pub fn _prob_interval(&mut self, pv: HashMap<String, Vec<Interval>>, ss: Vec<i32>) -> Interval {
         self.0.prob(&pv, &ss)
     }
 
-    pub fn minpath(&mut self) -> PyMddNode {
+    pub fn _minpath(&mut self) -> PyMddNode {
         PyMddNode(self.0.minpath())
     }
 
-    pub fn mdd_count(&self, ss: Vec<i64>) -> u64 {
+    pub fn _mdd_count(&self, ss: Vec<i32>) -> u64 {
         let ss = ss.iter().map(|x| *x).collect::<HashSet<_>>();
         self.0.mdd_count(&ss)
     }
 
-    pub fn zmdd_count(&self, ss: Vec<i64>) -> u64 {
+    pub fn _zmdd_count(&self, ss: Vec<i32>) -> u64 {
         let ss = ss.iter().map(|x| *x).collect::<HashSet<_>>();
         self.0.zmdd_count(&ss)
     }
+    
 
-    pub fn size(&self) -> (u64, u64, u64) {
+    pub fn _mdd_extract(&self, ss: Vec<i32>) -> PyMddPath {
+        PyMddPath::new(&self, ss)
+    }
+
+    pub fn _zmdd_extract(&self, ss: Vec<i32>) -> PyZMddPath {
+        PyZMddPath::new(&self, ss)
+    }
+
+    pub fn _size(&self) -> (u64, u64, u64) {
         self.0.size()
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+#[pyclass(unsendable)]
+pub struct PyMddPath {
+    bddnode: MddNode<i32>,
+    bddpath: MddPath<i32>,
+    domain: HashSet<i32>,
+}
 
-    #[test]
-    fn test_mdd_mgr() {
-        let mut mgr = PyMddMgr::new();
-        let mut vars = HashMap::new();
-        vars.insert("x".to_string(), 3);
-        vars.insert("y".to_string(), 3);
-        vars.insert("z".to_string(), 3);
-        let rpn = "x y z + *";
-        if let Ok(node) = mgr.rpn(rpn, vars) {
-            println!("{}", node.dot());
+#[pymethods]
+impl PyMddPath {
+    #[new]
+    fn new(node: &PyMddNode, ss: Vec<i32>) -> Self {
+        let ss = ss.iter().map(|x| *x).collect::<HashSet<_>>();
+        let bddpath = node.0.mdd_extract(&ss);
+        PyMddPath {
+            bddnode: node.0.clone(),
+            bddpath,
+            domain: ss.clone(),
         }
     }
+
+    fn __len__(&self) -> usize {
+        self.bddnode.mdd_count(&self.domain) as usize
+    }
+
+    fn __iter__(slf: PyRef<Self>) -> PyRef<Self> {
+        slf
+    }
+
+    fn __next__(mut slf: PyRefMut<Self>) -> Option<HashMap<String, usize>> {
+        slf.bddpath.next()
+    }
 }
+
+#[pyclass(unsendable)]
+pub struct PyZMddPath {
+    bddnode: MddNode<i32>,
+    bddpath: ZMddPath<i32>,
+    domain: HashSet<i32>,
+}
+
+#[pymethods]
+impl PyZMddPath {
+    #[new]
+    fn new(node: &PyMddNode, ss: Vec<i32>) -> Self {
+        let ss = ss.iter().map(|x| *x).collect::<HashSet<_>>();
+        let bddpath = node.0.zmdd_extract(&ss);
+        PyZMddPath {
+            bddnode: node.0.clone(),
+            bddpath,
+            domain: ss.clone(),
+        }
+    }
+
+    fn __len__(&self) -> usize {
+        self.bddnode.zmdd_count(&self.domain) as usize
+    }
+
+    fn __iter__(slf: PyRef<Self>) -> PyRef<Self> {
+        slf
+    }
+
+    fn __next__(mut slf: PyRefMut<Self>) -> Option<HashMap<String, usize>> {
+        slf.bddpath.next()
+    }
+}
+

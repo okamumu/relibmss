@@ -1,3 +1,4 @@
+import warnings
 import relibmss as ms
 
 def _to_rpn(expr):
@@ -48,9 +49,12 @@ class _Expression:
         return str(self.value)
 
 class Context:
-    def __init__(self):
+    def __init__(self, vars=[]):
         self.vars = set([])
         self.bdd = ms.BDD()
+        for varname in vars:
+            self.vars.add(varname)
+            self.bdd.defvar(varname)
 
     def defvar(self, name):
         self.vars.add(name)
@@ -59,9 +63,9 @@ class Context:
     def get_varorder(self):
         return self.bdd.get_varorder()
 
-    def set_varorder(self, x: list):
-        for varname in x:
-            self.bdd.defvar(varname)
+    # def set_varorder(self, x: list):
+    #     for varname in x:
+    #         self.bdd.defvar(varname)
 
     def __str__(self):
         return str(self.vars)
@@ -123,27 +127,29 @@ class Context:
             return self.And(args)
         else:
             return self.ifelse(args[0], self.kofn(k-1, args[1:]), self.kofn(k, args[1:]))
-
+    
     def prob(self, arg: _Expression, values: dict, ss = [True]):
+        warnings.warn("This function is obsolete. Use the method of BddNode directly.", category=DeprecationWarning)
         top = self.getbdd(arg)
         return top.prob(values, ss)
     
     def bmeas(self, arg: _Expression, values: dict, ss = [True]):
+        warnings.warn("This function is obsolete. Use the method of BddNode directly.", category=DeprecationWarning)
         top = self.getbdd(arg)
         return top.bmeas(values, ss)
 
     def prob_interval(self, arg: _Expression, values: dict, ss = [True]):
-        values = {k: ms.Interval(v[0], v[1]) for k, v in values.items()}
+        warnings.warn("This function is obsolete. Use the method of BddNode directly.", category=DeprecationWarning)
         top = self.getbdd(arg)
         return top.prob_interval(values, ss)
 
     def bmeas_interval(self, arg: _Expression, values: dict, ss = [True]):
-        values = {k: ms.Interval(v[0], v[1]) for k, v in values.items()}
+        warnings.warn("This function is obsolete. Use the method of BddNode directly.", category=DeprecationWarning)
         top = self.getbdd(arg)
         return top.bmeas_interval(values, ss)
 
     def minpath(self, arg: _Expression):
+        warnings.warn("This function is obsolete. Use the method of BddNode directly.", category=DeprecationWarning)
         top = self.getbdd(arg)
         return top.minpath()
-    
 

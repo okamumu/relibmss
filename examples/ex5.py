@@ -6,13 +6,13 @@ def gate1(mss, x, y):
         mss.case(cond=mss.And([x == 0, y == 0]), then=0),
         mss.case(cond=mss.Or([x == 0, y == 0]), then=1),
         mss.case(cond=mss.Or([x == 2, y == 2]), then=3),
-        mss.case(cond=None, then=2) # default
+        mss.case(then=2) # default
     ])
 
 def gate2(mss, x, y):
     return mss.switch([
         mss.case(cond=x == 0, then=0),
-        mss.case(cond=None, then=y)
+        mss.case(then=y)
     ])
 
 mss = ms.MSS() # Context for the multi-state system
@@ -36,3 +36,19 @@ prob = {
 
 # Calculate the probability
 print(mss.prob(ss, prob, [0,1,2]))
+
+# An example of the direct use of MDD
+
+mdd = ms.MDD()
+
+# Define variables
+A = mdd.defvar('A', 2) # 2 states
+B = mdd.defvar('B', 3) # 3 states
+C = mdd.defvar('C', 3) # 3 states
+
+# Define a multi-state system
+sx = gate1(mdd, B, C)
+ss = gate2(mdd, A, sx)
+
+# Calculate the probability
+print(ss.prob(prob, [0,1,2]))

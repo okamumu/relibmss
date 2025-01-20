@@ -1,4 +1,7 @@
+import warnings
 import relibmss as ms
+
+from relibmss.mdd import MddNode
 
 # def _to_rpn(expr):
 #     stack = [expr]
@@ -105,17 +108,20 @@ class _Case:
         self.then = then
 
 class Context:
-    def __init__(self):
+    def __init__(self, vars=[]):
         self.vars = {}
         self.mdd = ms.MDD()
+        for varname, domain in vars:
+            self.vars[varname] = domain
+            self.mdd.defvar(varname, domain)
 
     def defvar(self, name, domain):
         self.vars[name] = domain
         return _Expression(name)
     
-    def set_varorder(self, x: dict):
-        for varname in sorted(x, key=x.get):
-            self.mdd.defvar(varname, self.vars[varname])
+    # def set_varorder(self, x: dict):
+    #     for varname in sorted(x, key=x.get):
+    #         self.mdd.defvar(varname, self.vars[varname])
     
     def __str__(self):
         return str(self.vars)
@@ -188,17 +194,15 @@ class Context:
             return self.ifelse(x.cond, x.then, self.switch(conds[1:]))
 
     def prob(self, arg: _Expression, values: dict, sv: list):
+        warnings.warn("This function is obsolete. Use the method of MddNode directly.", category=DeprecationWarning)
         top = self.getmdd(arg)
         return top.prob(values, sv)
         
     def prob_interval(self, arg: _Expression, values: dict, sv: list):
-        values = {k: [ms.Interval(u[0], u[1]) for u in v] for k, v in values.items()}
+        warnings.warn("This function is obsolete. Use the method of MddNode directly.", category=DeprecationWarning)
         top = self.getmdd(arg)
         return top.prob_interval(values, sv)
     
     def minpath(self, arg: _Expression):
         top = self.getmdd(arg)
         return top.minpath()
-
-
-
