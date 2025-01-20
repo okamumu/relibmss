@@ -31,6 +31,10 @@ impl PyBddMgr {
         }
     }
 
+    pub fn _create_node(&self, hid: HeaderId, f0: &PyBddNode, f1: &PyBddNode) -> PyBddNode {
+        PyBddNode(self.0.create_node(hid, &f0.0, &f1.0))
+    }
+
     // defvar
     pub fn _defvar(&mut self, var: &str) -> PyBddNode {
         PyBddNode(self.0.defvar(var))
@@ -66,6 +70,32 @@ impl PyBddMgr {
 
 #[pymethods]
 impl PyBddNode {
+    pub fn _get_id(&self) -> usize {
+        self.0.get_id()
+    }
+
+    pub fn _get_header(&self) -> Option<HeaderId> {
+        self.0.get_header()
+    }
+
+    pub fn _get_level(&self) -> Option<usize> {
+        self.0.get_level()
+    }
+
+    pub fn _get_label(&self) -> Option<String> {
+        self.0.get_label()
+    }
+
+    pub fn _get_children(&self) -> Option<(PyBddNode, PyBddNode)> {
+        if let Some(node) = self.0.get_children() {
+            let f0 = PyBddNode(node.0.clone());
+            let f1 = PyBddNode(node.1.clone());
+            Some((f0, f1))
+        } else {
+            None
+        }
+    }
+
     pub fn _dot(&self) -> String {
         self.0.dot()
     }

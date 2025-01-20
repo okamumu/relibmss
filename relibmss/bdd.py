@@ -29,6 +29,9 @@ class BDD:
         self.vars.add(name)
         return BddNode(self.bdd, self.bdd._defvar(name))
     
+    def create_node(self, header, nodes):
+        return BddNode(self.bdd, self.bdd._create_node(header, nodes[0].node, nodes[1].node))
+    
     def get_varorder(self):
         return self.bdd._get_varorder()
     
@@ -77,6 +80,27 @@ class BddNode:
     def __init__(self, bdd, node):
         self.bdd = bdd
         self.node = node
+    
+    def __repr__(self):
+        return 'BddNode({})'.format(self.get_id())
+
+    def __str__(self):
+        return 'BddNode({})'.format(self.get_id())
+
+    def get_id(self):
+        return self.node._get_id()
+    
+    def get_header(self):
+        return self.node._get_header()
+    
+    def get_level(self):
+        return self.node._get_level()
+    
+    def get_label(self):
+        return self.node._get_label()
+    
+    def get_children(self):
+        return [BddNode(self.bdd, x) for x in self.node._get_children()]
 
     def __and__(self, other):
         other_node = _to_bddnode(self.bdd, other)

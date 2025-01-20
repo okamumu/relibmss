@@ -26,6 +26,9 @@ class MDD:
         self.vars[name] = n
         return MddNode(self.mdd, self.mdd._defvar(name, n))
     
+    def create_node(self, header, nodes):
+        return MddNode(self.mdd, self.mdd._create_node(header, nodes))
+
     def get_varorder(self):
         return self.mdd._get_varorder()
     
@@ -80,6 +83,27 @@ class MddNode:
         self.mdd = mdd
         self.node = node
 
+    def __repr__(self):
+        return 'MddNode({})'.format(self.get_id())
+    
+    def __str__(self):
+        return 'MddNode({})'.format(self.get_id())
+    
+    def get_id(self):
+        return self.node._get_id()
+    
+    def get_header(self):
+        return self.node._get_header()
+
+    def get_level(self):
+        return self.node._get_level()
+    
+    def get_label(self):
+        return self.node._get_label()
+    
+    def get_children(self):
+        return [MddNode(self.mdd, x) for x in self.node._get_children()]
+    
     def __add__(self, other):
         other_node = _to_mddnode(self.mdd, other)
         return MddNode(self.mdd, self.node._add(other_node.node))

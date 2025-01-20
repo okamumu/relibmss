@@ -29,6 +29,10 @@ impl PyMddMgr {
         PyMddNode(self.0.value(val))
     }
 
+    pub fn _create_node(&self, hid: HeaderId, nodes: Vec<PyMddNode>) -> PyMddNode {
+        PyMddNode(self.0.create_node(hid, &nodes.iter().map(|x| x.0.clone()).collect::<Vec<_>>()))
+    }
+
     pub fn _defvar(&mut self, label: &str, range: usize) -> PyMddNode {
         PyMddNode(self.0.defvar(label, range))
     }
@@ -68,6 +72,31 @@ impl PyMddMgr {
 
 #[pymethods]
 impl PyMddNode {
+    pub fn _get_id(&self) -> (usize, usize) {
+        self.0.get_id2()
+    }
+
+    pub fn _get_header(&self) -> Option<HeaderId> {
+        self.0.get_header()
+    }
+
+    pub fn _get_level(&self) -> Option<usize> {
+        self.0.get_level()
+    }
+
+    pub fn _get_label(&self) -> Option<String> {
+        self.0.get_label()
+    }
+
+    pub fn _get_children(&self) -> Option<Vec<PyMddNode>> {
+        if let Some(x) = self.0.get_children() {
+            let res = x.iter().map(|x| PyMddNode(x.clone())).collect::<Vec<_>>();
+            Some(res)
+        } else {
+            None
+        }
+    }
+
     pub fn _is_boolean(&self) -> bool {
         self.0.is_boolean()
     }

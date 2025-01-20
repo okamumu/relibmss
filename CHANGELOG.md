@@ -1,3 +1,7 @@
+# v0.8.0
+
+- Change a lot of interfaces to use BDD/MDD directly
+
 # v0.7.1
 
 - Bug fix: comparation operator for BddNode/MddNode
