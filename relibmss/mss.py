@@ -108,17 +108,20 @@ class _Case:
         self.then = then
 
 class Context:
-    def __init__(self):
+    def __init__(self, vars=[]):
         self.vars = {}
         self.mdd = ms.MDD()
+        for varname, domain in vars:
+            self.vars[varname] = domain
+            self.mdd.defvar(varname, domain)
 
     def defvar(self, name, domain):
         self.vars[name] = domain
         return _Expression(name)
     
-    def set_varorder(self, x: dict):
-        for varname in sorted(x, key=x.get):
-            self.mdd.defvar(varname, self.vars[varname])
+    # def set_varorder(self, x: dict):
+    #     for varname in sorted(x, key=x.get):
+    #         self.mdd.defvar(varname, self.vars[varname])
     
     def __str__(self):
         return str(self.vars)

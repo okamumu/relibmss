@@ -33,7 +33,7 @@ impl PyMddMgr {
         PyMddNode(self.0.defvar(label, range))
     }
 
-    pub fn _get_varorder(&self) -> Vec<String> {
+    pub fn _get_varorder(&self) -> Vec<(String, usize)> {
         self.0.get_varorder()
     }
 

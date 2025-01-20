@@ -11,15 +11,15 @@ class Point:
 
 np.random.seed(1234)
 
-bss = ms.BSS()
 m = 50
 n = 100
 ps = {'p'+str(i): Point(np.random.rand(), np.random.rand()) for i in range(m)}
-vars = {'p'+str(i): bss.defvar('p'+str(i)) for i in range(m)}
 # sort ps based on the distance from (0,0)
 sortedps = [k for (k,v) in sorted(ps.items(), key=lambda x: x[1].dist(Point(0,0)))]
 print(sortedps)
-bss.set_varorder(sortedps)
+
+bss = ms.BSS(vars=sortedps) # create an instance with the variable order
+vars = {'p'+str(i): bss.defvar('p'+str(i)) for i in range(m)}
 
 grid = {'grid_{}_{}'.format(i,j): Point(x,y) for (i,x) in enumerate(np.linspace(0,1,n)) for (j,y) in enumerate(np.linspace(0,1,n))}
 

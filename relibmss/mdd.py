@@ -16,13 +16,18 @@ class _Case:
         self.then = then
 
 class MDD:
-    def __init__(self):
+    def __init__(self, vars=[]):
         self.mdd = ms.PyMDD()
         self.vars = {}
+        for name, n in vars:
+            self.defvar(name, n)
     
     def defvar(self, name, n):
         self.vars[name] = n
         return MddNode(self.mdd, self.mdd._defvar(name, n))
+    
+    def get_varorder(self):
+        return self.mdd._get_varorder()
     
     def const(self, value):
         return _to_mddnode(self.mdd, value)

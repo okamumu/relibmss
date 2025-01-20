@@ -49,9 +49,12 @@ class _Expression:
         return str(self.value)
 
 class Context:
-    def __init__(self):
+    def __init__(self, vars=[]):
         self.vars = set([])
         self.bdd = ms.BDD()
+        for varname in vars:
+            self.vars.add(varname)
+            self.bdd.defvar(varname)
 
     def defvar(self, name):
         self.vars.add(name)
@@ -60,9 +63,9 @@ class Context:
     def get_varorder(self):
         return self.bdd.get_varorder()
 
-    def set_varorder(self, x: list):
-        for varname in x:
-            self.bdd.defvar(varname)
+    # def set_varorder(self, x: list):
+    #     for varname in x:
+    #         self.bdd.defvar(varname)
 
     def __str__(self):
         return str(self.vars)
