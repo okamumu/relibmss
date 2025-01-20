@@ -7,19 +7,19 @@ from functools import reduce
 def max_gate(mss, x, y):
   return mss.switch([
         mss.case(cond= x < y, then=y),
-        mss.case(cond=None, then=x) # default
+        mss.case(then=x) # default
     ])
 
 def min_gate(mss, x, y):
   return mss.switch([
         mss.case(cond= x < y, then=x),
-        mss.case(cond=None, then=y) # default
+        mss.case(then=y) # default
     ])
 
 def var2(mss, x):
   return mss.switch([
         mss.case(cond= x == 0, then=0),
-        mss.case(cond=None, then=x-1) # default
+        mss.case(then=x-1) # default
     ])
 
 def maxs(mss, x):
@@ -109,4 +109,45 @@ print(sy1.to_rpn())
 
 mdd = mss.getmdd(sy1)
 
-print(mdd.dot())
+print(mdd.size())
+# print(mdd.dot())
+
+## An example of the direct use of MDD
+
+np.random.seed(12247) # 乱数シードの設定
+r1 = 0.5 # カバーする半径（この場合は全部の基地が同じ半径）
+r2 = 1.0 # カバーする半径（この場合は全部の基地が同じ半径）
+n = 10 # 基地数
+base_list = [Base('base'+str(i), np.random.rand(2), r1, r2) for i in range(n)] # ランダムに[0,1] x [0,1]エリアに基地をn個配置
+orders = {x[1][0]:x[0] for x in enumerate(sorted([(b.name, np.linalg.norm(b.p)) for b in base_list], key=lambda x: x[1]))}
+
+mss = ms.MDD()
+vars = {b.name: mss.defvar(b.name, 3) for b in base_list} # 基地に対応する変数の作成
+prob = {b.name: [0.01, 0.3, 0.69] for b in base_list} # 各基地が故障しない確率
+
+gn = 5 # グリッド数 gn x gn 個の点を均等に配置
+grid_x = np.linspace(0, 1, gn)
+grid_y = np.linspace(0, 1, gn)
+# 点座標毎 [[0,0], [0,0.1], ...] のようなデータ
+grid = [np.array([x, y]) for x in grid_x for y in grid_y]
+# エリア毎の座標集合のデータ [[[0,0], [0,0.1], [0.1, 0]], [[0,0.1], [0.1,0], [0.1,0.1]], ...]
+grid2 = [np.array([[grid_x[xi], grid_y[yi]], [grid_x[xi], grid_y[yi-1]], [grid_x[xi-1], grid_y[yi]], [grid_x[xi-1], grid_y[yi-1]]]) for xi in range(1, gn) for yi in range(1, gn)]
+
+def make_tree(mss, g, base_list):
+  bases1 = [vars[b.name] for b in get_bases(base_list, g)[0]]
+  bases2 = [vars[b.name] for b in get_bases(base_list, g)[1]]
+  return max_gate(mss, maxs(mss, bases1), var2(mss, maxs(mss, bases2)))
+
+xs1 = [make_tree(mss, g, base_list) for g in grid]
+sy1 = mins(mss, xs1)
+
+def make_tree2(mss, gs, base_list):
+  bases1 = [vars[b.name] for b in get_bases2(base_list, gs)[0]]
+  bases2 = [vars[b.name] for b in get_bases2(base_list, gs)[1]]
+  return max_gate(mss, maxs(mss, bases1), var2(mss, maxs(mss, bases2)))
+
+xs2 = [make_tree2(mss, gs, base_list) for gs in grid2]
+sy2 = mins(mss, xs2)
+
+print(sy1.size())
+# print(sy1.dot())

@@ -1,4 +1,7 @@
+import warnings
 import relibmss as ms
+
+from relibmss.mdd import MddNode
 
 # def _to_rpn(expr):
 #     stack = [expr]
@@ -188,17 +191,15 @@ class Context:
             return self.ifelse(x.cond, x.then, self.switch(conds[1:]))
 
     def prob(self, arg: _Expression, values: dict, sv: list):
+        warnings.warn("This function is obsolete. Use the method of MddNode directly.", category=DeprecationWarning)
         top = self.getmdd(arg)
         return top.prob(values, sv)
         
     def prob_interval(self, arg: _Expression, values: dict, sv: list):
-        values = {k: [ms.Interval(u[0], u[1]) for u in v] for k, v in values.items()}
+        warnings.warn("This function is obsolete. Use the method of MddNode directly.", category=DeprecationWarning)
         top = self.getmdd(arg)
         return top.prob_interval(values, sv)
     
     def minpath(self, arg: _Expression):
         top = self.getmdd(arg)
         return top.minpath()
-
-
-
