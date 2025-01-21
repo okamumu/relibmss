@@ -1,3 +1,4 @@
 maturin
 pytest>=7.0.0
-
+numpy
+graphviz

@@ -149,19 +149,19 @@ class BddNode:
         else:
             raise ValueError("Invalid type")
     
-    def prob(self, values, sv=[True]):
-        return self.node._prob(values, sv)
+    def prob(self, probability, values=[True]):
+        return self.node._prob(probability, values)
     
-    def prob_interval(self, values, sv=[True]):
-        interval_values = {k: ms.Interval(v[0], v[1]) for k, v in values.items()}
-        return self.node._prob_interval(interval_values, sv)
+    def prob_interval(self, probability, values=[True]):
+        interval_probability = {k: ms.Interval(v[0], v[1]) for k, v in probability.items()}
+        return self.node._prob_interval(interval_probability, values)
     
     def minpath(self):
         return BddNode(self.bdd, self.node._minpath())
     
-    def bmeas(self, values, sv=[True]):
-        return self.node._bmeas(values, sv)
+    def bmeas(self, probability, values=[True]):
+        return self.node._bmeas(probability, values)
     
-    def bmeas_interval(self, values, sv=[True]):
-        interval_values = {k: ms.Interval(v[0], v[1]) for k, v in values.items()}
-        return self.node._bmeas_interval(interval_values, sv)
+    def bmeas_interval(self, probability, values=[True]):
+        interval_probability = {k: ms.Interval(v[0], v[1]) for k, v in probability.items()}
+        return self.node._bmeas_interval(interval_probability, values)

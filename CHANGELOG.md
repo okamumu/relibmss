@@ -1,3 +1,8 @@
+# v0.8.1
+
+- bug fix: Min, Max for MDD
+- Add test codes based on examples
+
 # v0.8.0
 
 - Change a lot of interfaces to use BDD/MDD directly

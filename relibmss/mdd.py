@@ -52,12 +52,12 @@ class MDD:
     def Min(self, values):
         nodes = [_to_mddnode(self.mdd, x) for x in values]
         nodes = [x.node for x in nodes]
-        return MddNode(self.mdd, self.mdd._Min(nodes))
+        return MddNode(self.mdd, self.mdd._min(nodes))
     
     def Max(self, values):
         nodes = [_to_mddnode(self.mdd, x) for x in values]
         nodes = [x.node for x in nodes]
-        return MddNode(self.mdd, self.mdd._Max(nodes))
+        return MddNode(self.mdd, self.mdd._max(nodes))
     
     def case(self, then, cond = True):
         cond_node = _to_mddnode(self.mdd, cond)
@@ -182,12 +182,12 @@ class MddNode:
         else:
             raise ValueError("Invalid type")
     
-    def prob(self, values, sv):
-        return self.node._prob(values, sv)
+    def prob(self, probability, values):
+        return self.node._prob(probability, values)
     
-    def prob_interval(self, values, sv):
-        interval_values = {k: [ms.Interval(u[0], u[1]) for u in v] for k, v in values.items()}
-        return self.node._prob_interval(interval_values, sv)
+    def prob_interval(self, probability, values):
+        interval_probability = {k: [ms.Interval(u[0], u[1]) for u in v] for k, v in probability.items()}
+        return self.node._prob_interval(interval_probability, values)
     
     def minpath(self):
         return MddNode(self.mdd, self.node._minpath())
