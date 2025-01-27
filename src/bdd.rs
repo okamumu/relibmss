@@ -18,9 +18,12 @@ impl PyBddMgr {
         PyBddMgr(BddMgr::new())
     }
 
-    // size
     pub fn _size(&self) -> (usize, usize, usize) {
         self.0.size()
+    }
+
+    pub fn _clear_cache(&mut self) {
+        self.0.clear_cache()
     }
 
     pub fn _value(&self, val: bool) -> PyBddNode {
@@ -35,7 +38,6 @@ impl PyBddMgr {
         PyBddNode(self.0.create_node(hid, &f0.0, &f1.0))
     }
 
-    // defvar
     pub fn _defvar(&mut self, var: &str) -> PyBddNode {
         PyBddNode(self.0.defvar(var))
     }

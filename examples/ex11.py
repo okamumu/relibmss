@@ -25,3 +25,7 @@ pv = {"link1": [0.1 for _ in range(10)],
     "link5": [0.1 for _ in range(10)]}
 
 print(ss.prob(probability=pv, values=[0, 1, 2, 3, 4, 5, 6, 7, 8]))
+print(mdd.info())
+mdd.clear_cache()
+print(mdd.info())
+print(mdd.__repr__())

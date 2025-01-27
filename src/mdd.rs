@@ -21,6 +21,10 @@ impl PyMddMgr {
         self.0.size()
     }
 
+    pub fn _clear_cache(&mut self) {
+        self.0.clear_cache()
+    }
+
     pub fn _boolean(&self, val: bool) -> PyMddNode {
         PyMddNode(self.0.boolean(val))
     }

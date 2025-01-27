@@ -1,3 +1,7 @@
+# v0.8.2
+
+- add info and clear_cache for BDD/MDD
+
 # v0.8.1
 
 - bug fix: Min, Max for MDD

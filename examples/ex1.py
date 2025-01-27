@@ -50,3 +50,8 @@ top = A & B | C # & is AND gate, | is OR gate
 print(top.prob(prob))
 print(top.prob_interval(probint))
 
+print(bdd.info())
+bdd.clear_cache()
+print(bdd.info())
+print(bdd.__repr__())
+print(A.__repr__())

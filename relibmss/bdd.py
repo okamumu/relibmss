@@ -24,6 +24,21 @@ class BDD:
         self.vars = set([])
         for name in vars:
             self.defvar(name)
+
+    def __repr__(self):
+        return 'BDD(vars={})'.format(self.get_varorder())
+        
+    def info(self):
+        (nvars, nnodes, ncache) = self.bdd._size()
+        return {
+            "vars": nvars,
+            "nodes": nnodes,
+            "terminals": 2,
+            "cache": ncache
+        }
+    
+    def clear_cache(self):
+        self.bdd._clear_cache()
     
     def defvar(self, name):
         self.vars.add(name)

@@ -22,6 +22,21 @@ class MDD:
         for name, n in vars:
             self.defvar(name, n)
     
+    def __repr__(self):
+        return 'MDD(vars={})'.format(self.get_varorder())
+
+    def info(self):
+        (nvars, nnodes, nterminals, ncache) = self.mdd._size()
+        return {
+            "vars": nvars,
+            "nodes": nnodes,
+            "terminals": nterminals,
+            "cache": ncache
+        }
+    
+    def clear_cache(self):
+        self.mdd._clear_cache()
+
     def defvar(self, name, n):
         self.vars[name] = n
         return MddNode(self.mdd, self.mdd._defvar(name, n))
